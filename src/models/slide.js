@@ -54,13 +54,11 @@ export function buildSlide(items) {
       text: items[68],
       textColor: items[70],
       bgColor: items[71],
-      fontSize: items[75],
+      fontSize: items[75] || 26,
       speed: items[76],
       x: toInt(items[72]),
       y: toInt(items[73]),
       z: toInt(items[81]),
-      // TODO: GET FEED HEIGHT
-      // TODO: PARSE TEMPLATE FEED
       width: toInt(items[74])
     };
   }

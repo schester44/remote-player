@@ -15,12 +15,14 @@
     "axios": "^0.19.2",
     "date-fns": "^2.11.1",
     "debug": "^4.1.1",
+    "dom2hscript": "^0.2.3",
     "hyperscript": "^2.0.2",
     "nanoevents": "^5.1.5",
     "query-string": "^6.11.1",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-npm": "^2.0.0",
-    "rollup-plugin-postcss": "^2.5.0"
+    "rollup-plugin-postcss": "^2.5.0",
+    "rollup-plugin-svg": "^2.0.0"
   },
   "scripts": {
     "build": "rollup -c",

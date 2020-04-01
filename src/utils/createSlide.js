@@ -12,7 +12,6 @@ export const createSlide = async ({
   slide: { slide, template },
   channel
 }) => {
-  // TODO: Replace this url with a placeholder or something.. this is for the industryweapon account.
   const src = `${config.baseUrl}/scs:RPC.wdGetSlide,${channel.ref},${channel.version},${index}`;
 
   const dom = h(

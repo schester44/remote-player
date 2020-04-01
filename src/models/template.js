@@ -1,53 +1,9 @@
-// TODO: Some of these values are probably incorrect due to the shit way that we return the data.
-
 export function buildTemplate(data) {
   const template = {
     id: data[1],
     name: data[2],
     width: data[3],
     height: data[4],
-    tvChannel: data[5],
-    video: data[6],
-    videoAlpha: data[7],
-    videoRadio: data[8],
-    videoX: data[9],
-    videoY: data[10],
-    videoHeight: data[11],
-    videoWidth: data[12],
-    videoVolume: data[13],
-    backgroundType: data[14],
-    backgroundImage: data[15],
-    backgroundColor: data[16],
-    weather: data[17],
-    weatherX: data[18],
-    weatherY: data[19],
-    weatherH: data[20],
-    weatherTemplate: data[21],
-    weatherW: data[22],
-    weatherColor: data[23],
-    dated: data[24],
-    dateX: data[25],
-    dateY: data[26],
-    dateHeight: data[27],
-    dateWidth: data[28],
-    dateTemplate: data[29],
-    dateColor: data[30],
-    time: data[31],
-    timeX: data[32],
-    timeY: data[33],
-    timeWidth: data[34],
-    timeHeight: data[35],
-    timeTemplate: data[36],
-    timeColor: data[37],
-    globalText: data[38],
-    globalTextSize: data[39],
-    globalTextColor: data[40],
-    globalTextBGColor: data[41],
-    globalTextText: data[42],
-    globalTextX: data[43],
-    globalTextY: data[44],
-    globalTextHeight: data[45],
-    globalTextWidth: data[46],
     RSS: data[47],
     tickerType: data[48],
     rssFeed: data[49],
@@ -61,9 +17,6 @@ export function buildTemplate(data) {
     feedWidth: data[57],
     tickerSize: data[58],
     tickerSpeed: data[59],
-    timeFontSize: data[60],
-    dateFontSize: data[61],
-    iframe: data[62],
     useDataFeed: data[71],
     dataFeed: data[72],
     dataFeedX: data[73],
@@ -73,6 +26,7 @@ export function buildTemplate(data) {
     dataFeedWidth: data[77]
   };
 
+  // TODO: Setup a template.ticker object similar to Slide
   if (template.RSS === "0") {
     template.hasRSSFeed = true;
   }

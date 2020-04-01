@@ -4,6 +4,7 @@ import { terser } from "rollup-plugin-terser";
 import json from "@rollup/plugin-json";
 import postcss from "rollup-plugin-postcss";
 import autoprefixer from "autoprefixer";
+import svg from "rollup-plugin-svg";
 
 // `npm run build` -> `production` is true
 // `npm run dev` -> `production` is false
@@ -17,6 +18,7 @@ export default {
     sourcemap: true
   },
   plugins: [
+    svg({ base64: true }),
     postcss({
       plugins: [autoprefixer()]
     }),
