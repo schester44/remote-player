@@ -9,8 +9,11 @@ import pauseIcon from "./icons/pause-circle.svg";
 import prevIcon from "./icons/skip-back.svg";
 import nextIcon from "./icons/skip-forward.svg";
 import playIcon from "./icons/play-circle.svg";
+import { emitter } from "./emitter";
 
 const debug = Debug("app");
+
+const nowInMS = () => new Date().getTime();
 
 const getLastIndex = ({ direction, index, totalSlides }) => {
   return direction === "next"
@@ -28,7 +31,12 @@ export default class WebDevice {
     this.slidesByChannel = {};
     this.currentSlideIndex = 0;
     this.activeChannel = undefined;
+
+    // Slide transition keeps track of when the timer was first initialized. Using it, plus a combination of this.defaultDuration, we're able to determine how much time is left before the slide paginates.
+    this.slideTransitionTime = undefined;
     this.slideTransitionTimeout = undefined;
+    // timeUntilTransition tracks how much time was left until the slide was supposed to transition. This is used when we pause the slide transition such as when a long video is played.
+    this.timeUntilTransition = undefined;
 
     this.isScrolling = false;
     this.isPaused = false;
@@ -54,7 +62,66 @@ export default class WebDevice {
       this.$root.classList.add("horizontal-transition");
     }
 
+    this.registerEventHandlers();
+
     debug("player element added to root");
+  }
+
+  registerEventHandlers() {
+    // Pause slide pagination when a video exceeds the length of the slide duration.
+    emitter.on("video:played", ({ duration: videoDuration }) => {
+      // Only disable pagination if playbackType is auto.
+      if (this.playbackType !== "auto") return;
+
+      // If there's no slideTransitionTime then there _shouldnt_ be a timer.
+      // Without a transitionTime, its impossible to compute when the slide will change
+      if (!this.slideTransitionTime) return;
+
+      this.timeUntilTransition =
+        this.defaultDuration * 1000 - (nowInMS() - this.slideTransitionTime);
+
+      debug("video playing, paused slide transition for", videoDuration);
+
+      if (videoDuration * 1000 > this.timeUntilTransition) {
+        this.stopSlidePagination();
+      }
+    });
+
+    // If a video canceled the slide transition, on pause, we need to re-enable that transition
+    emitter.on("video:paused", () => {
+      if (!this.timeUntilTransition) return;
+
+      this.setPaginationTimer({ duration: this.timeUntilTransition });
+    });
+
+    // When a video finishes playing, if we've previously disabled pagination then we need to enable pagination again.
+    emitter.on("video:ended", () => {
+      // if playbackType !== auto then there is no pagination to re-enable. If the user manually paused the slide, then we shouldn't override their action either.
+      // if there is no timeUntilTransition then we never paused the transition
+      if (
+        this.isPaused ||
+        this.playbackType !== "auto" ||
+        !this.timeUntilTransition
+      )
+        return;
+
+      // when the video has ended, we're going to paginate immediately so no need to keep this value around
+      this.timeUntilTransition = undefined;
+
+      // play the next slide once the video has ended
+      this.playNextSlide();
+    });
+  }
+
+  setPaginationTimer({ duration }) {
+    debug(`setPaginationTimer`, duration);
+
+    this.slideTransitionTime = nowInMS();
+
+    this.slideTransitionTimeout = window.setTimeout(() => {
+      debug("slide transitioned");
+      this.playNextSlide();
+    }, duration);
   }
 
   createControls() {
@@ -64,8 +131,7 @@ export default class WebDevice {
         onclick: () => {
           if (this.isScrolling) return;
 
-          window.clearTimeout(this.slideTransitionTimeout);
-
+          this.stopSlidePagination();
           this.playPrevSlide();
         }
       },
@@ -78,8 +144,7 @@ export default class WebDevice {
         onclick: () => {
           if (this.isScrolling) return;
 
-          window.clearTimeout(this.slideTransitionTimeout);
-
+          this.stopSlidePagination();
           this.playNextSlide();
         }
       },
@@ -158,10 +223,7 @@ export default class WebDevice {
       ? (this.defaultDuration + 1) * 1000
       : this.defaultDuration * 1000;
 
-    this.slideTransitionTimeout = window.setTimeout(() => {
-      debug("slide transitioned");
-      this.playNextSlide();
-    }, duration);
+    this.setPaginationTimer({ duration });
   }
 
   async transitionToSlide({ direction }) {
@@ -240,6 +302,11 @@ export default class WebDevice {
     return false;
   }
 
+  stopSlidePagination() {
+    this.slideTransitionTime = undefined;
+    window.clearTimeout(this.slideTransitionTimeout);
+  }
+
   togglePause() {
     const icon = document.querySelector("#pause-icon");
 
@@ -248,7 +315,7 @@ export default class WebDevice {
     const isPaused = !this.isPaused;
 
     if (isPaused) {
-      window.clearTimeout(this.slideTransitionTimeout);
+      this.stopSlidePagination();
     } else {
       this.playNextSlide({ index: this.currentSlideIndex, direction: "next" });
     }

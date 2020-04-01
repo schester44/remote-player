@@ -1,10 +1,12 @@
 import h from "hyperscript";
 import Debug from "debug";
 
-const debug = Debug("app:createMovie");
 import playIcon from "../icons/play-circle.svg";
+import { emitter } from "../emitter";
 
 import { scaleX, scaleY, scaleWidth, scaleHeight } from "./normalize";
+
+const debug = Debug("app:createMovie");
 
 export const createMovie = ({
   movie,
@@ -31,9 +33,14 @@ export const createMovie = ({
     autoplay: false,
     controls: true,
     controlsList: "nofullscreen nodownload noremoteplayback",
-    loop: true,
     src: movie.src,
     poster: movie.poster,
+    onended: ({ target: video }) => {
+      // forces the poster to be visible once the video ends
+      video.load();
+
+      emitter.emit("video:ended");
+    },
     oncanplay: ({ target: video }) => {
       video.style.cursor = "pointer";
 
@@ -43,8 +50,10 @@ export const createMovie = ({
     },
     onclick: ({ target: video }) => {
       if (video.paused) {
+        emitter.emit("video:played", { duration: video.duration });
         overlay.style.display = "none";
       } else {
+        emitter.emit("video:paused");
         overlay.style.display = "block";
       }
       video.paused ? video.play() : video.pause();

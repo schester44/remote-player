@@ -2,17 +2,17 @@
   "name": "webdevice",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-json": "^4.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
+    "@rollup/plugin-replace": "^2.3.1",
+    "dotenv": "^8.2.0",
     "npm-run-all": "^4.1.5",
     "rollup": "^2.3.2",
-    "rollup-plugin-terser": "^5.3.0",
-    "serve": "^11.3.0",
-    "@rollup/plugin-json": "^4.0.2",
-    "@rollup/plugin-replace": "^2.3.1",
     "rollup-plugin-inject-process-env": "^1.1.0",
     "rollup-plugin-postcss": "^2.5.0",
     "rollup-plugin-svg": "^2.0.0",
-    "dotenv": "^8.2.0"
+    "rollup-plugin-terser": "^5.3.0",
+    "serve": "^11.3.0"
   },
   "dependencies": {
     "@braid/rafscroll": "^2.0.1",
@@ -20,6 +20,7 @@
     "axios": "^0.19.2",
     "debug": "^4.1.1",
     "hyperscript": "^2.0.2",
+    "nanoevents": "^5.1.5",
     "query-string": "^6.11.1"
   },
   "scripts": {
