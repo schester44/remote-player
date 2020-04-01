@@ -326,10 +326,6 @@ export default class WebDevice {
     }
   }
 
-  setStyle(property, value) {
-    this.$root.style[property] = value;
-  }
-
   render(elem) {
     this.$root.innerHTML = "";
     this.$root.appendChild(elem);
