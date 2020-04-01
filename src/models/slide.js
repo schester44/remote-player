@@ -35,9 +35,14 @@ export function buildSlide(items) {
     const fileName = items[55].replace(".mpg", ".lh264");
 
     const src = `${config.baseUrl}/__--IW-media/${fileName}`;
+    const poster = `${config.baseUrl}/__--IW-media/${items[55].replace(
+      ".mpg",
+      ".jpg"
+    )}`;
 
     slide.movie = {
       src,
+      poster,
       x: toInt(items[57]),
       y: toInt(items[58]),
       z: toInt(items[62]),

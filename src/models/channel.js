@@ -3,7 +3,10 @@ import config from "../config";
 
 export const getChannelByDevice = async deviceId => {
   const response = await axios
-    .post(`${config.apiEndpoint}/scs:RPC.wdGetCurrentChannel`, `devid=${deviceId}`)
+    .post(
+      `${config.apiEndpoint}/scs:RPC.wdGetCurrentChannel`,
+      `devid=${deviceId}`
+    )
     .then(({ data }) => data);
 
   if (response.indexOf("ERR: unknown device") > -1) {

@@ -4,33 +4,29 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "npm-run-all": "^4.1.5",
-    "rollup": "^2.3.0",
+    "rollup": "^2.3.2",
     "rollup-plugin-terser": "^5.3.0",
-    "serve": "^11.3.0"
+    "serve": "^11.3.0",
+    "@rollup/plugin-json": "^4.0.2",
+    "@rollup/plugin-replace": "^2.3.1",
+    "rollup-plugin-inject-process-env": "^1.1.0",
+    "rollup-plugin-postcss": "^2.5.0",
+    "rollup-plugin-svg": "^2.0.0",
+    "dotenv": "^8.2.0"
   },
   "dependencies": {
     "@braid/rafscroll": "^2.0.1",
-    "@rollup/plugin-json": "^4.0.2",
-    "@rollup/plugin-replace": "^2.3.1",
     "autoprefixer": "^9.7.5",
     "axios": "^0.19.2",
-    "date-fns": "^2.11.1",
     "debug": "^4.1.1",
-    "dom2hscript": "^0.2.3",
-    "dotenv": "^8.2.0",
     "hyperscript": "^2.0.2",
-    "nanoevents": "^5.1.5",
-    "query-string": "^6.11.1",
-    "rollup-plugin-inject-process-env": "^1.1.0",
-    "rollup-plugin-json": "^4.0.0",
-    "rollup-plugin-npm": "^2.0.0",
-    "rollup-plugin-postcss": "^2.5.0",
-    "rollup-plugin-svg": "^2.0.0"
+    "query-string": "^6.11.1"
   },
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && yarn inline",
     "watch": "rollup -c -w",
     "dev": "npm-run-all --parallel start watch",
-    "start": "serve public"
+    "start": "serve public",
+    "inline": "npx inliner public/index.html > public/output.html"
   }
 }

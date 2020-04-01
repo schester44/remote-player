@@ -147,3 +147,13 @@ body,
   border-top-left-radius: 4px;
   justify-content: center;
 }
+
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-current-time-display,
+video::-webkit-media-controls-timeline-container,
+video::-webkit-media-text-track-container,
+video::-webkit-media-controls-fullscreen-button,
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-mute-button {
+  display: none;
+}
