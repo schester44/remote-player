@@ -338,9 +338,12 @@ export default class WebDevice {
   showError(error = "Error Loading Page") {
     debug("showing error", error);
 
+    this.$root.classList.add("app-loaded");
+
     this.render(
       h("div", h("h1", error), {
         style: {
+          color: "#000",
           width: "100%",
           height: "100%",
           display: "flex",

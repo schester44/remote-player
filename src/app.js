@@ -20,8 +20,8 @@ const wd = new WebDevice({
 
 if (!deviceId) {
   wd.showError("The URL you entered is invalid. It is missing a device ID.");
+} else {
+  getChannelByDevice(deviceId)
+    .then(channel => wd.play(channel))
+    .catch(e => wd.showError(e.message));
 }
-
-getChannelByDevice(deviceId)
-  .then(channel => wd.play(channel))
-  .catch(e => wd.showError(e.message));
