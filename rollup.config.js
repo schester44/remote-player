@@ -7,16 +7,17 @@ import json from "@rollup/plugin-json";
 import postcss from "rollup-plugin-postcss";
 import autoprefixer from "autoprefixer";
 import svg from "rollup-plugin-svg";
-import injectProcessEnv from "rollup-plugin-inject-process-env";
+import babel from "rollup-plugin-babel";
+import replace from "@rollup/plugin-replace";
 
 // `npm run build` -> `production` is true
 // `npm run dev` -> `production` is false
 const production = !process.env.ROLLUP_WATCH;
 
 const devEnvVariables = {
-  ACCOUNT: "industryweapon",
-  API_ENDPOINT: "http://localhost:3000",
-  BASE_URL: "https://industryweapon-iwiwws01.iwhd.us"
+  ACCOUNT: process.env.ACCOUNT,
+  API_ENDPOINT: process.env.API_ENDPOINT,
+  BASE_URL: process.env.BASE_URL
 };
 
 const prodEnvVariables = {
@@ -24,6 +25,18 @@ const prodEnvVariables = {
     '<$CALLEXTERNAL module="readfile" parameters="account" var=text><$PRINT value=text>',
   API_ENDPOINT: "",
   BASE_URL: ""
+};
+
+const envKeys = () => {
+  const envRaw = production ? prodEnvVariables : devEnvVariables;
+
+  return Object.keys(envRaw).reduce(
+    (envValues, envValue) => ({
+      ...envValues,
+      [`process.env.${envValue}`]: JSON.stringify(envRaw[envValue])
+    }),
+    {}
+  );
 };
 
 export default {
@@ -45,7 +58,24 @@ export default {
     commonjs({
       include: "node_modules/**"
     }), // converts date-fns to ES modules
-    injectProcessEnv(production ? prodEnvVariables : devEnvVariables),
+    replace(envKeys()),
+    babel({
+      exclude: [/\/core-js\//],
+      babelrc: false,
+      presets: [
+        [
+          "@babel/preset-env",
+          {
+            corejs: 3,
+            modules: false,
+            useBuiltIns: "usage",
+            targets: {
+              ie: "11"
+            }
+          }
+        ]
+      ]
+    }),
     production && terser() // minify, but only in production
   ]
 };

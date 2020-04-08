@@ -4,7 +4,11 @@ import { getSlideByChannelVersion } from "./models/slide";
 import Debug from "debug";
 import rafscroll from "@braid/rafscroll";
 import { createSlide } from "./utils/createSlide";
+
 import pauseIcon from "./icons/pause-circle.svg";
+import volume2Icon from "./icons/volume-2.svg";
+import volume1Icon from "./icons/volume-1.svg";
+import volumeIcon from "./icons/volume.svg";
 
 import prevIcon from "./icons/skip-back.svg";
 import nextIcon from "./icons/skip-forward.svg";
@@ -37,19 +41,24 @@ export default class WebDevice {
     this.slideTransitionTimeout = undefined;
     // timeUntilTransition tracks how much time was left until the slide was supposed to transition. This is used when we pause the slide transition such as when a long video is played.
     this.timeUntilTransition = undefined;
+    this.loadingVideoCount = 0;
+    this.activeVideosPlaying = 0;
 
     this.isScrolling = false;
     this.isPaused = false;
     this.isLoaded = false;
+    this.isVolumeControlsVisible = false;
 
-    this.transition = transition;
+    this.transition = transition === "v" ? "v" : "h";
+    this.defaultDuration = defaultDuration || 3;
+
     this.playbackType = playbackType === "0" ? "auto" : "click";
 
-    if (defaultDuration != "d") {
-      if (defaultDuration < 3) defaultDuration = 3;
+    if (isNaN(this.defaultDuration) || parseInt(defaultDuration) < 3) {
+      this.defaultDuration = 3;
     }
 
-    this.defaultDuration = defaultDuration;
+    this.defaultDuration = parseInt(this.defaultDuration, 10);
 
     this.$root = root || document.getElementById("root");
 
@@ -67,9 +76,47 @@ export default class WebDevice {
     debug("player element added to root");
   }
 
+  handleClick(e) {}
+
   registerEventHandlers() {
+    // Close the volume slider on outside click
+    document.addEventListener("click", (e) => {
+      if (!this.isVolumeControlsVisible) return;
+      if (this.volumeControl.contains(e.target)) return;
+
+      this.volumeControl.classList.remove("open");
+    });
+
+    emitter.on("video:loading", () => {
+      this.loadingVideoCount++;
+
+      this.stopPaginationTimer();
+    });
+
+    // Start the timer if all videos have been loaded or put into an error state
+    emitter.on("video:error", () => {
+      if (this.loadingVideoCount <= 0) return;
+      this.loadingVideoCount--;
+
+      if (this.loadingVideoCount === 0 && !this.isPaused) {
+        this.startPaginationTimer({ duration: this.defaultDuration * 1000 });
+      }
+    });
+
+    // When a video is playable, if all videos have loaded then start the timer
+    emitter.on("video:playable", () => {
+      this.loadingVideoCount--;
+
+      if (this.loadingVideoCount <= 0 && !this.isPaused) {
+        this.startPaginationTimer({ duration: this.defaultDuration * 1000 });
+      }
+    });
     // Pause slide pagination when a video exceeds the length of the slide duration.
     emitter.on("video:played", ({ duration: videoDuration }) => {
+      this.activeVideosPlaying++;
+
+      this.showVolumeButton();
+
       // Only disable pagination if playbackType is auto.
       if (this.playbackType !== "auto") return;
 
@@ -83,19 +130,27 @@ export default class WebDevice {
       debug("video playing, paused slide transition for", videoDuration);
 
       if (videoDuration * 1000 > this.timeUntilTransition) {
-        this.stopSlidePagination();
+        this.stopPaginationTimer();
       }
     });
 
     // If a video canceled the slide transition, on pause, we need to re-enable that transition
     emitter.on("video:paused", () => {
+      this.activeVideosPlaying--;
+
       if (!this.timeUntilTransition) return;
 
-      this.setPaginationTimer({ duration: this.timeUntilTransition });
+      this.startPaginationTimer({ duration: this.timeUntilTransition });
     });
 
     // When a video finishes playing, if we've previously disabled pagination then we need to enable pagination again.
     emitter.on("video:ended", () => {
+      this.activeVideosPlaying--;
+
+      if (this.activeVideosPlaying <= 0) {
+        this.hideVolumeButton();
+      }
+
       // if playbackType !== auto then there is no pagination to re-enable. If the user manually paused the slide, then we shouldn't override their action either.
       // if there is no timeUntilTransition then we never paused the transition
       if (
@@ -113,8 +168,15 @@ export default class WebDevice {
     });
   }
 
-  setPaginationTimer({ duration }) {
-    debug(`setPaginationTimer`, duration);
+  stopPaginationTimer() {
+    this.slideTransitionTime = undefined;
+    window.clearTimeout(this.slideTransitionTimeout);
+  }
+
+  startPaginationTimer({ duration }) {
+    debug(`startPaginationTimer`, duration);
+
+    this.stopPaginationTimer();
 
     this.slideTransitionTime = nowInMS();
 
@@ -125,28 +187,28 @@ export default class WebDevice {
   }
 
   createControls() {
-    const controlLeft = h(
+    const prevPageControl = h(
       "div.control .control-left",
       {
         onclick: () => {
           if (this.isScrolling) return;
 
-          this.stopSlidePagination();
+          this.stopPaginationTimer();
           this.playPrevSlide();
-        }
+        },
       },
       h("img.control-icon", { src: prevIcon })
     );
 
-    const controlRight = h(
+    const nextPageControl = h(
       "div.control .control-right",
       {
         onclick: () => {
           if (this.isScrolling) return;
 
-          this.stopSlidePagination();
+          this.stopPaginationTimer();
           this.playNextSlide();
-        }
+        },
       },
       h("img.control-icon", { src: nextIcon })
     );
@@ -157,7 +219,7 @@ export default class WebDevice {
         {
           onclick: () => {
             this.togglePause();
-          }
+          },
         },
         h("img#pause-icon", { src: pauseIcon })
       );
@@ -165,8 +227,63 @@ export default class WebDevice {
       this.$root.appendChild(pauseButton);
     }
 
-    this.$root.appendChild(controlLeft);
-    this.$root.appendChild(controlRight);
+    const $volumeIcon = h("img#volume-icon", { src: volume2Icon });
+
+    this.volumeControl = h(
+      "div#volume-btn",
+      {
+        onclick: ({ target }) => {
+          const control = document.getElementById("volume-btn");
+          const isOpen = control.classList.contains("open");
+
+          // Only close the slider if we're interacting with the icon.
+          // This allows for a bigger button surface area when opening the volume slider.
+          if (this.isVolumeControlsVisible && target !== $volumeIcon) {
+            return;
+          }
+
+          if (isOpen) {
+            this.isVolumeControlsVisible = false;
+            control.classList.remove("open");
+          } else {
+            this.isVolumeControlsVisible = true;
+            control.classList.add("open");
+          }
+        },
+      },
+      [
+        h("input#volume-slider", {
+          oninput: ({ target: slider }) => {
+            const value = parseInt(slider.value, 10);
+
+            if (value > 1 && value <= 50) {
+              $volumeIcon.src = volume1Icon;
+            }
+
+            if (value === 0) {
+              $volumeIcon.src = volumeIcon;
+            }
+
+            if (value > 50) {
+              $volumeIcon.src = volume2Icon;
+            }
+
+            emitter.emit("volume-change", { value });
+          },
+          type: "range",
+          min: 0,
+          max: 100,
+          value: 100,
+        }),
+        $volumeIcon,
+      ]
+    );
+
+    this.$root.appendChild(prevPageControl);
+    this.$root.appendChild(nextPageControl);
+
+    this.$root.appendChild(this.volumeControl);
+
     debug("controls created");
   }
 
@@ -205,7 +322,7 @@ export default class WebDevice {
     if (firstLoad || direction === "next") {
       this.$player.appendChild($slide);
     } else {
-      this.$player.prepend($slide);
+      this.$player.insertBefore($slide, this.$player.childNodes[0]);
 
       if (this.transition === "h") {
         // after a successful scrollLeft, we remove the previously active item and set the scrollLeft to 0.
@@ -223,7 +340,17 @@ export default class WebDevice {
       ? (this.defaultDuration + 1) * 1000
       : this.defaultDuration * 1000;
 
-    this.setPaginationTimer({ duration });
+    this.startPaginationTimer({ duration });
+  }
+
+  showVolumeButton() {
+    this.volumeControl.classList.add("visible");
+  }
+
+  hideVolumeButton() {
+    this.isVolumeControlsVisible = false;
+    this.volumeControl.classList.remove("visible");
+    this.volumeControl.classList.remove("open");
   }
 
   async transitionToSlide({ direction }) {
@@ -287,7 +414,7 @@ export default class WebDevice {
     const indexToRemove = getLastIndex({
       direction,
       index: this.currentSlideIndex,
-      totalSlides: slides.length
+      totalSlides: slides.length,
     });
 
     const siblingToRemove = document.getElementById(`slide-${indexToRemove}`);
@@ -302,11 +429,6 @@ export default class WebDevice {
     return false;
   }
 
-  stopSlidePagination() {
-    this.slideTransitionTime = undefined;
-    window.clearTimeout(this.slideTransitionTimeout);
-  }
-
   togglePause() {
     const icon = document.querySelector("#pause-icon");
 
@@ -315,7 +437,7 @@ export default class WebDevice {
     const isPaused = !this.isPaused;
 
     if (isPaused) {
-      this.stopSlidePagination();
+      this.stopPaginationTimer();
     } else {
       this.playNextSlide({ index: this.currentSlideIndex, direction: "next" });
     }
@@ -324,6 +446,9 @@ export default class WebDevice {
   }
 
   async playSlide({ index, direction = "next", firstLoad = false }) {
+    this.activeVideosPlaying = 0;
+    this.hideVolumeButton();
+
     debug("playSlide", index, direction, firstLoad);
 
     this.addActiveSlideToDOM({ direction, firstLoad });
@@ -357,13 +482,13 @@ export default class WebDevice {
     const firstSlide = await getSlideByChannelVersion({
       ref: channel.ref,
       version: channel.version,
-      index: 0
+      index: 0,
     });
 
     firstSlide.dom = await createSlide({
       index: 0,
       slide: firstSlide,
-      channel
+      channel,
     });
 
     // Play the first slide ASAP
@@ -372,7 +497,7 @@ export default class WebDevice {
 
     const indices = Array.from({
       // minus one because we preloaded the first slide
-      length: channel.slideCount - 1
+      length: channel.slideCount - 1,
     });
 
     // loop starts at 1 since we're initializing the array with the first item
@@ -380,12 +505,12 @@ export default class WebDevice {
       getSlideByChannelVersion({
         ref: channel.ref,
         version: channel.version,
-        index
-      }).then(async slide => {
+        index,
+      }).then(async (slide) => {
         slide.dom = await createSlide({
           index,
           channel,
-          slide
+          slide,
         });
 
         this.slidesByChannel[channel.ref][index] = slide;
@@ -403,17 +528,6 @@ export default class WebDevice {
 
     this.$root.classList.add("app-loaded");
 
-    this.render(
-      h("div", h("h1", error), {
-        style: {
-          color: "#000",
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          "align-items": "center",
-          "justify-content": "center"
-        }
-      })
-    );
+    this.render(h("div.error-page", h("h1", error)));
   }
 }

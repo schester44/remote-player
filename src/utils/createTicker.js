@@ -44,7 +44,7 @@ export const createTicker = async ({
     overflow: "hidden",
     background:
       ticker.bgColor.length > 0 ? `#${ticker.bgColor}` : "transparent",
-    color: `#${ticker.textColor}`,
+    color: `#${ticker.textColor || '000'}`,
     left: `${scaleX(ticker.x, slideWidth, webDeviceWidth)}px`,
     top: `${scaleY(ticker.y, slideHeight, webDeviceHeight)}px`,
     width: `${width}px`,

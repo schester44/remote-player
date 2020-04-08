@@ -13,55 +13,83 @@ export const createMovie = ({
   slideWidth,
   slideHeight,
   webDeviceWidth,
-  webDeviceHeight
+  webDeviceHeight,
 }) => {
   debug("creating video with src", movie.src);
 
-  const overlay = h("img", {
+  const overlay = h("img.video-playicon", {
     src: playIcon,
-    style: {
-      display: "none",
-      position: "absolute",
-      width: "40px",
-      height: "40px",
-      "pointer-events": "none"
-    }
   });
 
+  const loader = h("div.loader");
+
   const video = h("video.video", {
-    muted: true,
     autoplay: false,
-    controls: true,
-    controlsList: "nofullscreen nodownload noremoteplayback",
     src: movie.src,
+    controls: false,
     poster: movie.poster,
+    onpause: () => {
+      debug("video:paused");
+
+      emitter.emit("video:paused", { element: video });
+      overlay.style.display = "block";
+    },
+    onloadstart: ({ target: video }) => {
+      video.parentNode.appendChild(loader);
+
+      debug("video onLoadStart");
+      emitter.emit("video:loading");
+    },
     onended: ({ target: video }) => {
-      // forces the poster to be visible once the video ends
+      // resets the video and shows the poster.
       video.load();
+      debug("video onEnded");
+
+      if (loader.parentNode === video.parentNode) {
+        video.parentNode.removeChild(loader);
+      }
 
       emitter.emit("video:ended");
     },
     oncanplay: ({ target: video }) => {
-      video.style.cursor = "pointer";
+      debug("video onCanPlay");
+      emitter.emit("video:playable");
 
       if (video.paused) {
+        if (loader.parentNode === video.parentNode) {
+          video.parentNode.removeChild(loader);
+        }
+        video.style.cursor = "pointer";
         overlay.style.display = "block";
       }
     },
     onclick: ({ target: video }) => {
+      debug("video state", video.paused, video.readyState);
+
       if (video.paused) {
-        emitter.emit("video:played", { duration: video.duration });
+        video.play();
+
+        emitter.emit("video:played", {
+          element: video,
+          duration: video.duration,
+        });
+
         overlay.style.display = "none";
       } else {
-        emitter.emit("video:paused");
-        overlay.style.display = "block";
+        video.pause();
       }
-      video.paused ? video.play() : video.pause();
     },
     style: {
       width: `${scaleWidth(movie.width, slideWidth, webDeviceWidth)}px`,
-      height: `${scaleHeight(movie.height, slideHeight, webDeviceHeight)}px`
-    }
+      height: `${scaleHeight(movie.height, slideHeight, webDeviceHeight)}px`,
+    },
+  });
+
+  // TODO: This could probably be handled better somehow instead of binding a listener for every video
+  emitter.on("volume-change", ({ value }) => {
+    debug("volume level set to", value / 100);
+
+    video.volume = value / 100;
   });
 
   return h(
@@ -74,10 +102,7 @@ export const createMovie = ({
         left: `${scaleX(movie.x, slideWidth, webDeviceWidth)}px`,
         width: `${scaleWidth(movie.width, slideWidth, webDeviceWidth)}px`,
         height: `${scaleHeight(movie.height, slideHeight, webDeviceHeight)}px`,
-        display: "flex",
-        "align-items": "center",
-        "justify-content": "center"
-      }
+      },
     },
     [overlay, video]
   );
