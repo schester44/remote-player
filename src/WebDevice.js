@@ -397,10 +397,13 @@ export default class WebDevice {
 
   showVolumeButton() {
     this.volumeControl.classList.add("visible");
+    this.volumeControl.classList.remove("hidden");
   }
 
   hideVolumeButton() {
     this.isVolumeControlsVisible = false;
+    // this.volumeControl.classList.remove("visible");
+    this.volumeControl.classList.add("hidden");
     this.volumeControl.classList.remove("visible");
     this.volumeControl.classList.remove("open");
   }
@@ -536,6 +539,19 @@ export default class WebDevice {
     this.$root.style.width = `${channel.width}px`;
     this.$root.style.height = `${channel.height}px`;
     this.$root.style.background = "rgba(32,32,32,1)";
+
+    const resize = () => {
+      const width = window.innerWidth;
+      const scale = width / channel.width;
+
+      console.log(window.innerWidth, channel.width);
+
+      this.$root.style.transform = `scale(${scale})`;
+    };
+
+    resize();
+
+    window.addEventListener("resize", resize);
 
     this.createControls();
 

@@ -13,6 +13,8 @@ const {
   r: isRefreshEnabled,
 } = qs.parse(document.location.search);
 
+const $root = document.getElementById("root");
+
 const wd = new WebDevice({
   transition,
   playbackType,
