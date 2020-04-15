@@ -22,10 +22,19 @@ const wd = new WebDevice({
   isRefreshEnabled: isRefreshEnabled === "1",
 });
 
-if (!deviceId) {
-  wd.showError("The URL you entered is invalid. It is missing a device ID.");
+const url =
+  window.location != window.parent.location
+    ? document.referrer
+    : document.location.href;
+
+if (url.indexOf("https://cchdrsrc.channelshd.com") !== 0) {
+  wd.showError("Industry Weapon");
 } else {
-  getChannelByDevice(deviceId)
-    .then((channel) => wd.play(channel))
-    .catch((e) => wd.showError(e.message));
+  if (!deviceId) {
+    wd.showError("The URL you entered is invalid. It is missing a device ID.");
+  } else {
+    getChannelByDevice(deviceId)
+      .then((channel) => wd.play(channel))
+      .catch((e) => wd.showError(e.message));
+  }
 }
