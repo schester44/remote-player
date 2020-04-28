@@ -5,6 +5,7 @@ import Debug from "debug";
 import rafscroll from "@braid/rafscroll";
 import { createSlide } from "./utils/createSlide";
 
+import refreshIcon from "./icons/refresh.svg";
 import pauseIcon from "./icons/pause-circle.svg";
 import volume2Icon from "./icons/volume-2.svg";
 import volume1Icon from "./icons/volume-1.svg";
@@ -247,11 +248,38 @@ export default class WebDevice {
       h("img.control-icon", { src: nextIcon })
     );
 
-    this.$root.appendChild(prevPageControl);
-    this.$root.appendChild(nextPageControl);
-  }
+    if (this.playbackType === "auto") {
+      const pauseButton = h(
+        "div.bottom-nav-button#pause-btn",
+        {
+          style: {
+            right: "50px",
+          },
+          onclick: () => {
+            this.togglePause();
+          },
+        },
+        h("img#pause-icon", { src: pauseIcon })
+      );
 
-  addVolumeControls() {
+      this.$root.appendChild(pauseButton);
+    }
+
+    const refreshButton = h(
+      "div.bottom-nav-button#refresh-btn",
+      {
+        style: {
+          right: this.playbackType === "auto" ? "100px" : "50px",
+        },
+        onclick: () => {
+          window.location.reload();
+        },
+      },
+      h("img#refresh-icon", { src: refreshIcon })
+    );
+
+    this.$root.appendChild(refreshButton);
+
     const $volumeIcon = h("img#volume-icon", { src: volume2Icon });
 
     this.volumeControl = h(

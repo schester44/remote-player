@@ -27,7 +27,10 @@ const url =
     ? document.referrer
     : document.location.href;
 
-if (url.indexOf("https://cchdrsrc.channelshd.com") !== 0) {
+if (
+  process.env.NODE_ENV !== "development" &&
+  url.indexOf("https://cchdrsrc.channelshd.com") !== 0
+) {
   wd.showError("Industry Weapon");
 } else {
   if (!deviceId) {

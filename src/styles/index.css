@@ -227,24 +227,23 @@ body,
   border-radius: 50px;
 }
 
-#root:hover #pause-btn {
+#root:hover .bottom-nav-button {
   opacity: 1;
 }
 
-#pause-btn:hover #pause-icon {
+.bottom-nav-button:hover img {
   transform: scale(1.2);
 }
 
-#pause-icon {
+.bottom-nav-button img {
   transition: transform 0.2s ease;
 }
 
-#pause-btn {
+.bottom-nav-button {
   opacity: 0;
   transition: opacity 0.3s ease;
   position: absolute;
   bottom: 0;
-  right: 50px;
   width: 40px;
   height: 40px;
   background: rgba(40, 40, 40, 0.8);
@@ -255,6 +254,7 @@ body,
   border-top-left-radius: 4px;
   justify-content: center;
 }
+
 
 video {
   outline: none;

@@ -17,14 +17,14 @@ const production = !process.env.ROLLUP_WATCH;
 const devEnvVariables = {
   ACCOUNT: process.env.ACCOUNT,
   API_ENDPOINT: process.env.API_ENDPOINT,
-  BASE_URL: process.env.BASE_URL
+  BASE_URL: process.env.BASE_URL,
 };
 
 const prodEnvVariables = {
   ACCOUNT:
     '<$CALLEXTERNAL module="readfile" parameters="account" var=text><$PRINT value=text>',
   API_ENDPOINT: "",
-  BASE_URL: ""
+  BASE_URL: "",
 };
 
 const envKeys = () => {
@@ -33,9 +33,11 @@ const envKeys = () => {
   return Object.keys(envRaw).reduce(
     (envValues, envValue) => ({
       ...envValues,
-      [`process.env.${envValue}`]: JSON.stringify(envRaw[envValue])
+      [`process.env.${envValue}`]: JSON.stringify(envRaw[envValue]),
     }),
-    {}
+    {
+      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
+    }
   );
 };
 
@@ -44,19 +46,19 @@ export default {
   output: {
     file: "public/bundle.js",
     format: "iife", // immediately-invoked function expression — suitable for <script> tags
-    sourcemap: true
+    sourcemap: true,
   },
   plugins: [
     svg({ base64: true }),
     postcss({
-      plugins: [autoprefixer()]
+      plugins: [autoprefixer()],
     }),
     json(),
     resolve({
-      browser: true
+      browser: true,
     }), // tells Rollup how to find date-fns in node_modules
     commonjs({
-      include: "node_modules/**"
+      include: "node_modules/**",
     }), // converts date-fns to ES modules
     replace(envKeys()),
     babel({
@@ -70,12 +72,12 @@ export default {
             modules: false,
             useBuiltIns: "usage",
             targets: {
-              ie: "11"
-            }
-          }
-        ]
-      ]
+              ie: "11",
+            },
+          },
+        ],
+      ],
     }),
-    production && terser() // minify, but only in production
-  ]
+    production && terser(), // minify, but only in production
+  ],
 };
