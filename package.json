@@ -30,11 +30,11 @@
     "query-string": "^6.11.1"
   },
   "scripts": {
-    "build": "rollup -c && yarn inline",
+    "build": "rollup -c",
     "watch": "rollup -c -w",
     "dev": "npm-run-all --parallel start watch",
     "start": "serve public",
-    "inline": "npx inliner public/index.html > public/output.html"
+    "inline": "yarn buuild && npx inliner public/index.html > public/output.html"
   },
   "browserslist": "> 0.25%, not dead"
 }
