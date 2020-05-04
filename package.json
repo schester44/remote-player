@@ -34,7 +34,7 @@
     "watch": "rollup -c -w",
     "dev": "npm-run-all --parallel start watch",
     "start": "serve public",
-    "inline": "yarn build npx inliner public/index.html > public/output.html"
+    "inline": "yarn build && npx inliner public/index.html > public/output-teams.html"
   },
   "browserslist": "> 0.25%, not dead"
 }

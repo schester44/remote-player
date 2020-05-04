@@ -1,9 +1,11 @@
 import qs from "query-string";
 import { getChannelByDevice } from "./models/channel";
-
+import Debug from "debug";
 import WebDevice from "./WebDevice";
 
 import "./styles/index.css";
+
+const debug = Debug("app");
 
 const {
   t: transition,
@@ -27,10 +29,13 @@ const url =
     ? document.referrer
     : document.location.href;
 
-if (
-  process.env.NODE_ENV !== "development" &&
-  url.indexOf("https://cchdrsrc.channelshd.com") !== 0
-) {
+debug("url", url, window.location, document.location.href, document.referrer);
+
+const validHost =
+  url === document.location.href ||
+  url.indexOf("https://cchdrsrc.channelshd.com") === 0;
+
+if (process.env.NODE_ENV !== "development" && !validHost) {
   wd.showError("Industry Weapon");
 } else {
   if (!deviceId) {
