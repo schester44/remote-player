@@ -14,20 +14,9 @@ import prevIcon from "./icons/skip-back.svg";
 import nextIcon from "./icons/skip-forward.svg";
 import playIcon from "./icons/play-circle.svg";
 import { emitter } from "./emitter";
+import { nowInMS, getLastIndex } from "./utils";
 
 const debug = Debug("app");
-
-const nowInMS = () => new Date().getTime();
-
-const getLastIndex = ({ direction, index, totalSlides }) => {
-  return direction === "next"
-    ? index === 0
-      ? totalSlides - 1
-      : index - 1
-    : index === totalSlides - 1
-    ? 0
-    : index + 1;
-};
 
 export default class WebDevice {
   constructor({ transition, playbackType, defaultDuration, root }) {

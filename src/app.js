@@ -9,19 +9,19 @@ const {
   t: transition,
   p: playbackType,
   s: defaultDuration,
-  d: deviceId
+  d: deviceId,
 } = qs.parse(document.location.search);
 
 const wd = new WebDevice({
   transition,
   playbackType,
-  defaultDuration
+  defaultDuration,
 });
 
 if (!deviceId) {
   wd.showError("The URL you entered is invalid. It is missing a device ID.");
 } else {
   getChannelByDevice(deviceId)
-    .then(channel => wd.play(channel))
-    .catch(e => wd.showError(e.message));
+    .then((channel) => wd.play(channel))
+    .catch((e) => wd.showError(e.message));
 }
