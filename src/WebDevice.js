@@ -54,6 +54,8 @@ export default class WebDevice {
 
     this.playbackType = playbackType === "0" ? "auto" : "click";
 
+    debug("transition type", this.playbackType);
+
     if (isNaN(this.defaultDuration) || parseInt(defaultDuration) < 3) {
       this.defaultDuration = 3;
     }
@@ -75,8 +77,6 @@ export default class WebDevice {
 
     debug("player element added to root");
   }
-
-  handleClick(e) {}
 
   registerEventHandlers() {
     // Close the volume slider on outside click
@@ -174,6 +174,9 @@ export default class WebDevice {
   }
 
   startPaginationTimer({ duration }) {
+    // There isn't a pagination timer when the playback type is "click"
+    if (this.playbackType === "click") return;
+
     debug(`startPaginationTimer`, duration);
 
     this.stopPaginationTimer();
@@ -442,12 +445,20 @@ export default class WebDevice {
       this.playNextSlide({ index: this.currentSlideIndex, direction: "next" });
     }
 
-    this.isPaused = !this.isPaused;
+    this.isPaused = isPaused;
   }
 
   async playSlide({ index, direction = "next", firstLoad = false }) {
     this.activeVideosPlaying = 0;
     this.hideVolumeButton();
+
+    // Player was paused but the user clicked one of the navigation buttons
+    if (this.isPaused) {
+      const icon = document.querySelector("#pause-icon");
+
+      icon.src = pauseIcon;
+      this.isPaused = false;
+    }
 
     debug("playSlide", index, direction, firstLoad);
 
