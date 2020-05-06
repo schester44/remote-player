@@ -36,7 +36,7 @@ export default class WebDevice {
     this.currentSlideIndex = 0;
     this.activeChannel = undefined;
 
-    // Slide transition keeps track of when the timer was first initialized. Using it, plus a combination of this.defaultDuration, we're able to determine how much time is left before the slide paginates.
+    // Slide transition keeps track of when the timer was first initialized. Using it, plus a combination of this.slideDuration, we're able to determine how much time is left before the slide paginates.
     this.slideTransitionTime = undefined;
     this.slideTransitionTimeout = undefined;
     // timeUntilTransition tracks how much time was left until the slide was supposed to transition. This is used when we pause the slide transition such as when a long video is played.
@@ -50,17 +50,20 @@ export default class WebDevice {
     this.isVolumeControlsVisible = false;
 
     this.transition = transition === "v" ? "v" : "h";
-    this.defaultDuration = defaultDuration || 3;
+    this.slideDuration = defaultDuration || 3;
+
+    // Original value, do not change
+    this._slideDuration = defaultDuration;
 
     this.playbackType = playbackType === "0" ? "auto" : "click";
 
     debug("transition type", this.playbackType);
 
-    if (isNaN(this.defaultDuration) || parseInt(defaultDuration) < 3) {
-      this.defaultDuration = 3;
+    if (isNaN(this.slideDuration) || parseInt(this.slideDuration) < 3) {
+      this.slideDuration = 3;
     }
 
-    this.defaultDuration = parseInt(this.defaultDuration, 10);
+    this.slideDuration = parseInt(this.slideDuration, 10);
 
     this.$root = root || document.getElementById("root");
 
@@ -99,7 +102,7 @@ export default class WebDevice {
       this.loadingVideoCount--;
 
       if (this.loadingVideoCount === 0 && !this.isPaused) {
-        this.startPaginationTimer({ duration: this.defaultDuration * 1000 });
+        this.startPaginationTimer({ duration: this.slideDuration * 1000 });
       }
     });
 
@@ -108,7 +111,7 @@ export default class WebDevice {
       this.loadingVideoCount--;
 
       if (this.loadingVideoCount <= 0 && !this.isPaused) {
-        this.startPaginationTimer({ duration: this.defaultDuration * 1000 });
+        this.startPaginationTimer({ duration: this.slideDuration * 1000 });
       }
     });
     // Pause slide pagination when a video exceeds the length of the slide duration.
@@ -125,7 +128,7 @@ export default class WebDevice {
       if (!this.slideTransitionTime) return;
 
       this.timeUntilTransition =
-        this.defaultDuration * 1000 - (nowInMS() - this.slideTransitionTime);
+        this.slideDuration * 1000 - (nowInMS() - this.slideTransitionTime);
 
       debug("video playing, paused slide transition for", videoDuration);
 
@@ -339,9 +342,21 @@ export default class WebDevice {
   }
 
   setupNextSlideTransition({ firstLoad }) {
+    const { slide } = this.slidesByChannel[this.activeChannel][
+      this.currentSlideIndex
+    ];
+
+    // When _slideDuration === "d", we're wanting to use the pre-configured slide duration/delay (from CCHD).
+    // So, we need to change the slideDuration value on every pagination
+    if (this._slideDuration === "d" && !isNaN(slide.delay)) {
+      this.slideDuration = parseInt(slide.delay) / 1000;
+
+      debug("Overriding slide duration with ", this.slideDuration);
+    }
+
     const duration = firstLoad
-      ? (this.defaultDuration + 1) * 1000
-      : this.defaultDuration * 1000;
+      ? (this.slideDuration + 1) * 1000
+      : this.slideDuration * 1000;
 
     this.startPaginationTimer({ duration });
   }
