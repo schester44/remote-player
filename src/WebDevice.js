@@ -475,6 +475,8 @@ export default class WebDevice {
       totalSlides: slides.length,
     });
 
+    debug("index to remove", indexToRemove);
+
     const siblingToRemove = document.getElementById(`slide-${indexToRemove}`);
 
     if (siblingToRemove) {
@@ -584,6 +586,20 @@ export default class WebDevice {
       // minus one because we preloaded the first slide
       length: channel.slideCount - 1,
     });
+
+    // indices will be 0 when there's only 1 slide.
+    // When there's 1 slide, we insert a copy of it so that we can still do seamless transitions between slides.
+    if (indices.length === 0) {
+      this.slidesByChannel[channel.ref].push({
+        ...firstSlide,
+        dom: await createSlide({
+          imgIndex: 0,
+          index: 1,
+          slide: firstSlide,
+          channel,
+        }),
+      });
+    }
 
     // loop starts at 1 since we're initializing the array with the first item
     for (let index = 1; index <= indices.length; index++) {
