@@ -20,6 +20,7 @@ const wd = new WebDevice({
   playbackType,
   defaultDuration,
   isRefreshEnabled: isRefreshEnabled === "1",
+  isResponsive: !!process.env.IS_RESPONSIVE || !!process.env.IS_TEAMS,
 });
 
 const url =
@@ -27,13 +28,15 @@ const url =
     ? document.referrer
     : document.location.href;
 
-debug("url", url, window.location, document.location.href, document.referrer);
-
 const validHost =
   url === document.location.href ||
   url.indexOf("https://cchdrsrc.channelshd.com") === 0;
 
-if (process.env.NODE_ENV !== "development" && !validHost) {
+if (
+  process.env.IS_TEAMS &&
+  process.env.NODE_ENV !== "development" &&
+  !validHost
+) {
   wd.showError("Industry Weapon");
 } else {
   if (!deviceId) {

@@ -27,6 +27,14 @@ const prodEnvVariables = {
   BASE_URL: "",
 };
 
+const globalEnvVars = {
+  "process.env.NODE_ENV": JSON.stringify(
+    production ? "production" : "development"
+  ),
+  "process.env.IS_TEAMS": JSON.stringify(!!process.env.IS_TEAMS),
+  "process.env.IS_RESPONSIVE": JSON.stringify(!!process.env.IS_RESPONSIVE),
+};
+
 const envKeys = () => {
   const envRaw = production ? prodEnvVariables : devEnvVariables;
 
@@ -35,9 +43,7 @@ const envKeys = () => {
       ...envValues,
       [`process.env.${envValue}`]: JSON.stringify(envRaw[envValue]),
     }),
-    {
-      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
-    }
+    globalEnvVars
   );
 };
 

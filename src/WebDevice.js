@@ -25,6 +25,7 @@ export default class WebDevice {
     playbackType,
     defaultDuration,
     isRefreshEnabled,
+    isResponsive,
     root,
   }) {
     this.channels = {};
@@ -48,6 +49,7 @@ export default class WebDevice {
     this.transition = transition === "v" ? "v" : "h";
     this.slideDuration = defaultDuration || 3;
     this.isRefreshEnabled = !!isRefreshEnabled;
+    this.isResponsive = !!isResponsive;
 
     // Original value, do not change
     this._slideDuration = defaultDuration;
@@ -193,8 +195,6 @@ export default class WebDevice {
     if (this.playbackType === "auto") {
       this.addPauseControl();
     }
-
-    console.log(this.isRefreshEnabled);
 
     if (this.isRefreshEnabled) {
       this.addRefreshControls();
@@ -543,18 +543,24 @@ export default class WebDevice {
     this.$root.style.height = `${channel.height}px`;
     this.$root.style.background = "rgba(32,32,32,1)";
 
-    const resize = () => {
-      const width = window.innerWidth;
-      const scale = width / channel.width;
+    if (this.isResponsive) {
+      const scaleContainer = document.getElementById("scale");
 
-      console.log(window.innerWidth, channel.width);
+      scaleContainer.style.width = "100vw";
+      scaleContainer.style.height = "100vh";
+      scaleContainer.style.overflow = "hidden";
 
-      this.$root.style.transform = `scale(${scale})`;
-    };
+      const resize = () => {
+        const width = window.innerWidth;
+        const scale = width / channel.width;
 
-    resize();
+        this.$root.style.transform = `scale(${scale})`;
+      };
 
-    window.addEventListener("resize", resize);
+      resize();
+
+      window.addEventListener("resize", resize);
+    }
 
     this.createControls();
 

@@ -34,7 +34,10 @@
     "watch": "rollup -c -w",
     "dev": "npm-run-all --parallel start watch",
     "start": "serve public",
-    "inline": "yarn build && npx inliner public/index.html > public/output-teams.html"
+    "inline-fixed": "yarn build && npx inliner public/index.html > public/output-fixed.html",
+    "inline-teams": "IS_TEAMS=true yarn build && npx inliner public/index.html > public/output-teams.html",
+    "inline-responsive": "IS_RESPONSIVE=true yarn build && npx inliner public/index.html > public/output-responsive.html",
+    "inline": "yarn inline-fixed && yarn inline-teams && yarn inline-responsive"
   },
   "browserslist": "> 0.25%, not dead"
 }
