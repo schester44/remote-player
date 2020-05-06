@@ -194,6 +194,8 @@ export default class WebDevice {
       this.addPauseControl();
     }
 
+    console.log(this.isRefreshEnabled);
+
     if (this.isRefreshEnabled) {
       this.addRefreshControls();
     }
@@ -248,38 +250,11 @@ export default class WebDevice {
       h("img.control-icon", { src: nextIcon })
     );
 
-    if (this.playbackType === "auto") {
-      const pauseButton = h(
-        "div.bottom-nav-button#pause-btn",
-        {
-          style: {
-            right: "50px",
-          },
-          onclick: () => {
-            this.togglePause();
-          },
-        },
-        h("img#pause-icon", { src: pauseIcon })
-      );
+    this.$root.appendChild(prevPageControl);
+    this.$root.appendChild(nextPageControl);
+  }
 
-      this.$root.appendChild(pauseButton);
-    }
-
-    const refreshButton = h(
-      "div.bottom-nav-button#refresh-btn",
-      {
-        style: {
-          right: this.playbackType === "auto" ? "100px" : "50px",
-        },
-        onclick: () => {
-          window.location.reload();
-        },
-      },
-      h("img#refresh-icon", { src: refreshIcon })
-    );
-
-    this.$root.appendChild(refreshButton);
-
+  addVolumeControls() {
     const $volumeIcon = h("img#volume-icon", { src: volume2Icon });
 
     this.volumeControl = h(

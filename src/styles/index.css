@@ -140,7 +140,6 @@ body,
   position: absolute;
   z-index: 50;
   bottom: 0;
-  right: 100px;
   background: rgba(228, 153, 153, 0.8);
   padding: 8px;
   border-top-right-radius: 4px;
