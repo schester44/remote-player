@@ -19,7 +19,13 @@ import { nowInMS, getLastIndex } from "./utils";
 const debug = Debug("app");
 
 export default class WebDevice {
-  constructor({ transition, playbackType, defaultDuration, root }) {
+  constructor({
+    transition,
+    playbackType,
+    defaultDuration,
+    isRefreshEnabled,
+    root,
+  }) {
     this.channels = {};
     this.slidesByChannel = {};
     this.currentSlideIndex = 0;
@@ -40,6 +46,7 @@ export default class WebDevice {
 
     this.transition = transition === "v" ? "v" : "h";
     this.slideDuration = defaultDuration || 3;
+    this.isRefreshEnabled = !!isRefreshEnabled;
 
     // Original value, do not change
     this._slideDuration = defaultDuration;
@@ -182,6 +189,38 @@ export default class WebDevice {
   }
 
   createControls() {
+    if (this.playbackType === "auto") {
+      this.addPauseControl();
+    }
+
+    if (this.isRefreshEnabled) {
+      this.addRefreshControls();
+    }
+
+    this.addVolumeControls();
+    this.addPaginationControls();
+
+    debug("controls created");
+  }
+
+  addPauseControl() {
+    const pauseButton = h(
+      "div.bottom-nav-button#pause-btn",
+      {
+        style: {
+          right: "50px",
+        },
+        onclick: () => {
+          this.togglePause();
+        },
+      },
+      h("img#pause-icon", { src: pauseIcon })
+    );
+
+    this.$root.appendChild(pauseButton);
+  }
+
+  addPaginationControls() {
     const prevPageControl = h(
       "div.control .control-left",
       {
@@ -208,25 +247,19 @@ export default class WebDevice {
       h("img.control-icon", { src: nextIcon })
     );
 
-    if (this.playbackType === "auto") {
-      const pauseButton = h(
-        "div#pause-btn",
-        {
-          onclick: () => {
-            this.togglePause();
-          },
-        },
-        h("img#pause-icon", { src: pauseIcon })
-      );
+    this.$root.appendChild(prevPageControl);
+    this.$root.appendChild(nextPageControl);
+  }
 
-      this.$root.appendChild(pauseButton);
-    }
-
+  addVolumeControls() {
     const $volumeIcon = h("img#volume-icon", { src: volume2Icon });
 
     this.volumeControl = h(
       "div#volume-btn",
       {
+        style: {
+          right: this.isRefreshEnabled ? "150px" : "100px",
+        },
         onclick: ({ target }) => {
           const control = document.getElementById("volume-btn");
           const isOpen = control.classList.contains("open");
@@ -274,12 +307,24 @@ export default class WebDevice {
       ]
     );
 
-    this.$root.appendChild(prevPageControl);
-    this.$root.appendChild(nextPageControl);
-
     this.$root.appendChild(this.volumeControl);
+  }
 
-    debug("controls created");
+  addRefreshControls() {
+    const refreshButton = h(
+      "div.bottom-nav-button#refresh-btn",
+      {
+        style: {
+          right: this.playbackType === "auto" ? "100px" : "50px",
+        },
+        onclick: () => {
+          window.location.reload();
+        },
+      },
+      h("img#refresh-icon", { src: refreshIcon })
+    );
+
+    this.$root.appendChild(refreshButton);
   }
 
   playPrevSlide() {

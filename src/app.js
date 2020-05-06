@@ -10,12 +10,14 @@ const {
   p: playbackType,
   s: defaultDuration,
   d: deviceId,
+  r: isRefreshEnabled,
 } = qs.parse(document.location.search);
 
 const wd = new WebDevice({
   transition,
   playbackType,
   defaultDuration,
+  isRefreshEnabled: isRefreshEnabled === "1",
 });
 
 if (!deviceId) {
