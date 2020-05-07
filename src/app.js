@@ -2,6 +2,7 @@ import qs from "query-string";
 import { getChannelByDevice } from "./models/channel";
 import Debug from "debug";
 import WebDevice from "./WebDevice";
+import { getUserStyles } from "./utils/styles";
 
 import "./styles/index.css";
 
@@ -13,12 +14,22 @@ const {
   s: defaultDuration,
   d: deviceId,
   r: isRefreshEnabled,
+  pos: playerPosition,
+  border: playerBorder,
 } = qs.parse(document.location.search);
+
+debug("player position", playerPosition);
+debug("player border", playerBorder);
+
+let userStyles = getUserStyles({ playerPosition, playerBorder });
+
+console.log(userStyles);
 
 const wd = new WebDevice({
   transition,
   playbackType,
   defaultDuration,
+  userStyles,
   isRefreshEnabled: isRefreshEnabled === "1",
   isResponsive: !!process.env.IS_RESPONSIVE || !!process.env.IS_TEAMS,
 });

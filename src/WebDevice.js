@@ -26,6 +26,7 @@ export default class WebDevice {
     defaultDuration,
     isRefreshEnabled,
     isResponsive,
+    userStyles = {},
     root,
   }) {
     this.channels = {};
@@ -45,6 +46,7 @@ export default class WebDevice {
     this.isPaused = false;
     this.isLoaded = false;
     this.isVolumeControlsVisible = false;
+    this.userStyles = userStyles;
 
     this.transition = transition === "v" ? "v" : "h";
     this.slideDuration = defaultDuration || 3;
@@ -545,9 +547,21 @@ export default class WebDevice {
     this.$root.style.height = `${channel.height}px`;
     this.$root.style.background = "rgba(32,32,32,1)";
 
-    if (this.isResponsive) {
-      const scaleContainer = document.getElementById("scale");
+    const scaleContainer = document.getElementById("scale");
 
+    if (this.userStyles.page) {
+      Object.keys(this.userStyles.page).forEach((prop) => {
+        scaleContainer.style[prop] = this.userStyles.page[prop];
+      });
+    }
+
+    if (this.userStyles.player) {
+      Object.keys(this.userStyles.player).forEach((prop) => {
+        this.$root.style[prop] = this.userStyles.player[prop];
+      });
+    }
+
+    if (this.isResponsive) {
       scaleContainer.style.width = "100vw";
       scaleContainer.style.height = "100vh";
       scaleContainer.style.overflow = "hidden";
