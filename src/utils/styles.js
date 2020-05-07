@@ -74,7 +74,7 @@ export const getUserStyles = ({ playerPosition, playerBorder }) => {
   }
 
   if (playerBorder) {
-    // determine if its a hex or rgb value
+    // determine if its a hex or rgb value..not the most reliable since `10px solid red` fails this check
 
     let borderParts = playerBorder.split(" ");
 

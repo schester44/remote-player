@@ -545,7 +545,6 @@ export default class WebDevice {
 
     this.$root.style.width = `${channel.width}px`;
     this.$root.style.height = `${channel.height}px`;
-    this.$root.style.background = "rgba(32,32,32,1)";
 
     const scaleContainer = document.getElementById("scale");
 
