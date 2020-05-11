@@ -2,6 +2,7 @@ import qs from "query-string";
 import { getChannelByDevice } from "./models/channel";
 import Debug from "debug";
 import WebDevice from "./WebDevice";
+import Logger from './Logger'
 import { getUserStyles } from "./utils/styles";
 
 import "./styles/index.css";
@@ -16,6 +17,7 @@ const {
   r: isRefreshEnabled,
   pos: playerPosition,
   border: playerBorder,
+  ga: googleAnalyticsId,
 } = qs.parse(document.location.search);
 
 debug("player position", playerPosition);
@@ -23,13 +25,14 @@ debug("player border", playerBorder);
 
 let userStyles = getUserStyles({ playerPosition, playerBorder });
 
-console.log(userStyles);
+const logger = new Logger({ googleAnalyticsId });
 
 const wd = new WebDevice({
   transition,
   playbackType,
   defaultDuration,
   userStyles,
+  logger,
   isRefreshEnabled: isRefreshEnabled === "1",
   isResponsive: !!process.env.IS_RESPONSIVE || !!process.env.IS_TEAMS,
 });

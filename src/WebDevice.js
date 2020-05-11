@@ -27,6 +27,7 @@ export default class WebDevice {
     isRefreshEnabled,
     isResponsive,
     userStyles = {},
+    logger,
     root,
   }) {
     this.channels = {};
@@ -47,6 +48,7 @@ export default class WebDevice {
     this.isLoaded = false;
     this.isVolumeControlsVisible = false;
     this.userStyles = userStyles;
+    this.logger = logger;
 
     this.transition = transition === "v" ? "v" : "h";
     this.slideDuration = defaultDuration || 3;
@@ -116,10 +118,14 @@ export default class WebDevice {
       }
     });
     // Pause slide pagination when a video exceeds the length of the slide duration.
-    emitter.on("video:played", ({ duration: videoDuration }) => {
+    emitter.on("video:played", ({ duration: videoDuration, movie }) => {
       this.activeVideosPlaying++;
 
       this.showVolumeButton();
+
+      this.logger.log("event", "play", {
+        event_category: "Videos",
+      });
 
       // Only disable pagination if playbackType is auto.
       if (this.playbackType !== "auto") return;
@@ -333,7 +339,7 @@ export default class WebDevice {
   }
 
   playPrevSlide() {
-    const slides = this.slidesByChannel[this.activeChannel];
+    const slides = this.getActiveChannel();
 
     if (this.currentSlideIndex === 0) {
       this.currentSlideIndex = slides.length - 1;
@@ -346,7 +352,7 @@ export default class WebDevice {
   }
 
   playNextSlide() {
-    const slides = this.slidesByChannel[this.activeChannel];
+    const slides = this.getActiveChannel();
 
     if (this.currentSlideIndex === slides.length - 1) {
       this.currentSlideIndex = 0;
@@ -360,9 +366,7 @@ export default class WebDevice {
   }
 
   addActiveSlideToDOM({ firstLoad, direction }) {
-    const { dom: $slide, slide } = this.slidesByChannel[this.activeChannel][
-      this.currentSlideIndex
-    ];
+    const { dom: $slide } = this.getActiveChannel()[this.currentSlideIndex];
 
     if (firstLoad || direction === "next") {
       this.$player.appendChild($slide);
@@ -381,9 +385,7 @@ export default class WebDevice {
   }
 
   setupNextSlideTransition({ firstLoad }) {
-    const { slide } = this.slidesByChannel[this.activeChannel][
-      this.currentSlideIndex
-    ];
+    const { slide } = this.getActiveChannel()[this.currentSlideIndex];
 
     // When _slideDuration === "d", we're wanting to use the pre-configured slide duration/delay (from CCHD).
     // So, we need to change the slideDuration value on every pagination
@@ -468,8 +470,12 @@ export default class WebDevice {
     }
   }
 
+  getActiveChannel() {
+    return this.slidesByChannel[this.activeChannel];
+  }
+
   _removeLastSlide({ direction }) {
-    const slides = this.slidesByChannel[this.activeChannel];
+    const slides = this.getActiveChannel();
 
     const indexToRemove = getLastIndex({
       direction,
@@ -531,6 +537,13 @@ export default class WebDevice {
     if (!firstLoad) {
       await this.transitionToSlide({ direction });
     }
+
+    const { slide } = this.getActiveChannel()[index];
+
+    this.logger.log("event", "view", {
+      event_category: "Slides",
+      event_label: slide.name,
+    });
 
     if (this.playbackType === "auto") {
       this.setupNextSlideTransition({ firstLoad });

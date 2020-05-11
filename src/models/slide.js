@@ -28,7 +28,7 @@ export function buildSlide(items) {
     campaign: items[64],
     universalTextField: items[87],
     universalMediaSlot: items[85],
-    fullScreenVideo: items[86]
+    fullScreenVideo: items[86],
   };
 
   if (items[53] === "0" && items[55]) {
@@ -48,7 +48,7 @@ export function buildSlide(items) {
       z: toInt(items[62]),
       width: toInt(items[60]),
       height: toInt(items[59]),
-      opacity: items[61] === "" ? 100 : parseFloat(items[61])
+      opacity: items[61] === "" ? 100 : parseFloat(items[61]),
     };
   }
 
@@ -64,7 +64,7 @@ export function buildSlide(items) {
       x: toInt(items[72]),
       y: toInt(items[73]),
       z: toInt(items[81]),
-      width: toInt(items[74])
+      width: toInt(items[74]),
     };
   }
 
@@ -75,14 +75,14 @@ export const getSlideByChannelVersion = async ({ ref, version, index }) => {
   const data = qs.stringify({
     channelReference: ref,
     versionID: version,
-    slideIndex: index
+    slideIndex: index,
   });
 
   const response = await axios
     .post(`${config.apiEndpoint}/scs:RPC.wdGetCCHD`, data, {
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     })
     .then(({ data }) => data);
 
@@ -94,7 +94,7 @@ export const getSlideByChannelVersion = async ({ ref, version, index }) => {
     template: buildTemplate(slideDetails[1].split(" ")),
     channel: {
       ref,
-      version
-    }
+      version,
+    },
   };
 };
