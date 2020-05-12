@@ -9,3 +9,7 @@ export const getLastIndex = ({ direction, index, totalSlides }) => {
     ? 0
     : index + 1;
 };
+
+export const updatePageTitle = (title) => {
+  document.title = title;
+};

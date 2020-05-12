@@ -16,6 +16,7 @@ import nextIcon from "./icons/skip-forward.svg";
 import playIcon from "./icons/play-circle.svg";
 import { emitter } from "./emitter";
 import { nowInMS, getLastIndex } from "./utils";
+import { TRANSITION_TYPES } from "./config";
 
 const debug = Debug("app");
 
@@ -50,7 +51,9 @@ export default class WebDevice {
     this.userStyles = userStyles;
     this.logger = logger;
 
-    this.transition = transition === "v" ? "v" : "h";
+    // Fallback to `d` which indicates "Disabled" AKA No transition
+    this.transition = TRANSITION_TYPES[transition] ? transition : "d";
+
     this.slideDuration = defaultDuration || 3;
     this.isRefreshEnabled = !!isRefreshEnabled;
     this.isResponsive = !!isResponsive;
@@ -422,8 +425,10 @@ export default class WebDevice {
         break;
 
       case "h":
-      default:
         await this._horizontalTransition({ direction });
+        break;
+      default:
+        await this._defaultTransition({ direction });
         break;
     }
   }
@@ -447,6 +452,12 @@ export default class WebDevice {
     if (removedSibling) {
       this.$player.scrollTop = 0;
     }
+  }
+
+  async _defaultTransition({ direction }) {
+    debug("transitioning");
+
+    this._removeLastSlide({ direction });
   }
 
   async _horizontalTransition({ direction }) {

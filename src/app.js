@@ -2,7 +2,8 @@ import qs from "query-string";
 import { getChannelByDevice } from "./models/channel";
 import Debug from "debug";
 import WebDevice from "./WebDevice";
-import Logger from './Logger'
+import Logger from "./Logger";
+import { updatePageTitle } from "./utils";
 import { getUserStyles } from "./utils/styles";
 
 import "./styles/index.css";
@@ -18,6 +19,7 @@ const {
   pos: playerPosition,
   border: playerBorder,
   ga: googleAnalyticsId,
+  name: deviceName,
 } = qs.parse(document.location.search);
 
 debug("player position", playerPosition);
@@ -26,6 +28,10 @@ debug("player border", playerBorder);
 let userStyles = getUserStyles({ playerPosition, playerBorder });
 
 const logger = new Logger({ googleAnalyticsId });
+
+if (deviceName) {
+  updatePageTitle(deviceName);
+}
 
 const wd = new WebDevice({
   transition,
