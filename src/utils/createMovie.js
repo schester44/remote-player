@@ -6,7 +6,7 @@ import { emitter } from "../emitter";
 
 import { scaleX, scaleY, scaleWidth, scaleHeight } from "./normalize";
 
-const debug = Debug("app:createMovie");
+const debug = Debug("app:create:createMovie");
 
 export const createMovie = ({
   movie,

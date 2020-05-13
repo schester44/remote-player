@@ -3,9 +3,11 @@ import Debug from "debug";
 
 import { createMovie } from "./createMovie";
 import { createTicker } from "./createTicker";
+import { createTouchPoint } from "./createTouchPoint";
+
 import config from "../config";
 
-const debug = Debug("app:createSlide");
+const debug = Debug("app:create:createSlide");
 
 export const createSlide = async ({
   // imgIndex is used when there is only 1 slide in the channel.
@@ -15,6 +17,7 @@ export const createSlide = async ({
   index,
   slide: { slide, template },
   channel,
+  touchpoints = [],
 }) => {
   imgIndex = typeof imgIndex !== "undefined" ? imgIndex : index;
 
@@ -37,6 +40,18 @@ export const createSlide = async ({
       src,
     })
   );
+
+  touchpoints.forEach((touchpoint) => {
+    dom.appendChild(
+      createTouchPoint({
+        touchpoint,
+        slideWidth: slide.width,
+        slideHeight: slide.height,
+        webDeviceWidth: channel.width,
+        webDeviceHeight: channel.height,
+      })
+    );
+  });
 
   if (template.ticker || slide.ticker) {
     dom.appendChild(

@@ -17,3 +17,11 @@ export function scaleWidth(width, canvasWidth, webDeviceWidth) {
 export function scaleHeight(height, canvasHeight, webDeviceHeight) {
   return Math.round(scaleY(height - 1, canvasHeight, webDeviceHeight) + 1);
 }
+
+export function toInt(value, defaultValue) {
+  if (!value) return defaultValue || value;
+
+  const parsed = parseInt(value, 10);
+
+  return isNaN(parsed) ? defaultValue || value : parsed;
+}

@@ -1,13 +1,8 @@
 import axios from "axios";
-import config from "../config";
 import qs from "query-string";
+import config from "../config";
 import { buildTemplate } from "./template";
-
-const toInt = (value, defaultValue) => {
-  if (!value) return defaultValue || value;
-  const parsed = parseInt(value, 10);
-  return isNaN(parsed) ? defaultValue || value : parsed;
-};
+import { toInt } from "../utils/normalize";
 
 export function buildSlide(items) {
   const slide = {

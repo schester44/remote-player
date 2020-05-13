@@ -1,10 +1,12 @@
 import qs from "query-string";
-import { getChannelByDevice } from "./models/channel";
 import Debug from "debug";
+import { getChannelByDevice } from "./models/channel";
+import { getSyncAux } from "./models/syncAux";
+import { getUserStyles } from "./utils/styles";
+import { updatePageTitle } from "./utils";
+
 import WebDevice from "./WebDevice";
 import Logger from "./Logger";
-import { updatePageTitle } from "./utils";
-import { getUserStyles } from "./utils/styles";
 
 import "./styles/index.css";
 
@@ -62,8 +64,10 @@ if (
   if (!deviceId) {
     wd.showError("The URL you entered is invalid. It is missing a device ID.");
   } else {
-    getChannelByDevice(deviceId)
-      .then((channel) => wd.play(channel))
+    Promise.all([getChannelByDevice(deviceId), getSyncAux()])
+      .then(([channel, touchpointsBySlide]) =>
+        wd.play({ channel, touchpointsBySlide })
+      )
       .catch((e) => wd.showError(e.message));
   }
 }

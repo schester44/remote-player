@@ -1,7 +1,7 @@
 import h from "hyperscript";
 import Debug from "debug";
 
-const debug = Debug("app:createTicker");
+const debug = Debug("app:create:createTicker");
 
 import {
   scaleX,

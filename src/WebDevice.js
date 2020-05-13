@@ -561,7 +561,7 @@ export default class WebDevice {
     }
   }
 
-  async play(channel) {
+  async play({ channel, touchpointsBySlide }) {
     debug("play channel");
 
     this.channels[channel.ref] = channel;
@@ -613,6 +613,7 @@ export default class WebDevice {
       index: 0,
       slide: firstSlide,
       channel,
+      touchpoints: touchpointsBySlide[firstSlide.slide.id],
     });
 
     // Play the first slide ASAP
@@ -634,6 +635,7 @@ export default class WebDevice {
           index: 1,
           slide: firstSlide,
           channel,
+          touchpoints: touchpointsBySlide[firstSlide.slide.id],
         }),
       });
     }
@@ -649,6 +651,7 @@ export default class WebDevice {
           index,
           channel,
           slide,
+          touchpoints: touchpointsBySlide[slide.slide.id],
         });
 
         this.slidesByChannel[channel.ref][index] = slide;
