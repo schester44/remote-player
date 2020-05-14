@@ -32,7 +32,8 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w",
-    "dev": "npm-run-all --parallel start watch",
+    "dev": "npm-run-all --parallel start watch proxy",
+    "proxy": "cd proxy && yarn start",
     "start": "serve public",
     "inline-fixed": "yarn build && npx inliner public/index.html > public/output-fixed.html",
     "inline-teams": "IS_TEAMS=true yarn build && npx inliner public/index.html > public/output-teams.html",

@@ -10,8 +10,6 @@ import Logger from "./Logger";
 
 import "./styles/index.css";
 
-const debug = Debug("app");
-
 const {
   t: transition,
   p: playbackType,
@@ -22,7 +20,17 @@ const {
   border: playerBorder,
   ga: googleAnalyticsId,
   name: deviceName,
+  debug: debugEnabled,
 } = qs.parse(document.location.search);
+
+const debug = Debug("app:setup");
+
+if (debugEnabled === "true") {
+  window._RP_DEBUG_ENABLED = true;
+  localStorage.setItem("debug", "app*");
+
+  debug("DEBUG ENABLED");
+}
 
 debug("player position", playerPosition);
 debug("player border", playerBorder);

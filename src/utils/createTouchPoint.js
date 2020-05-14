@@ -16,8 +16,10 @@ export const createTouchPoint = ({
       window.open(touchpoint.action);
     },
     style: {
+      background: window._RP_DEBUG_ENABLED
+        ? "rgba(255, 0, 0, 0.5)"
+        : "transparent",
       cursor: "pointer",
-      background: "red",
       position: "absolute",
       width: `${scaleWidth(touchpoint.width, slideWidth, webDeviceWidth)}px`,
       height: `${scaleHeight(
