@@ -1,8 +1,5 @@
 import h from "hyperscript";
-import Debug from "debug";
 import { scaleWidth, scaleHeight, scaleX, scaleY } from "../utils/normalize";
-
-const debug = Debug("app:create:createTouchPoint");
 
 export const createTouchPoint = ({
   touchpoint,
@@ -13,7 +10,13 @@ export const createTouchPoint = ({
 }) => {
   const $elem = h("div.touchpoint", {
     onclick: () => {
-      window.open(touchpoint.action);
+      // T = "target url" -- which has no real meaning other than we want the URL to open in the iframe instead of a new window
+      if (touchpoint.type === "T") {
+        window.location.href = touchpoint.action;
+      } else {
+        // This should be an action type of "U" which means URL.. which means open in a new window
+        window.open(touchpoint.action);
+      }
     },
     style: {
       background: window._RP_DEBUG_ENABLED
@@ -30,7 +33,7 @@ export const createTouchPoint = ({
 
       top: `${scaleY(touchpoint.y, slideHeight, webDeviceHeight)}px`,
       left: `${scaleX(touchpoint.x, slideWidth, webDeviceWidth)}px`,
-      "z-index": `${touchpoint.z}`,
+      "z-index": "30",
     },
   });
 

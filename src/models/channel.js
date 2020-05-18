@@ -14,7 +14,11 @@ export const getChannelByDevice = async (deviceId) => {
   }
 
   if (response.indexOf("ERR:") > -1) {
-    const [, error] = response.split("ERR:");
+    let [, error] = response.split("ERR:");
+
+    if (error.indexOf("null channel content") > -1) {
+      error = "Content is syncing. Check back soon!";
+    }
 
     throw new Error(error);
   }
@@ -22,7 +26,7 @@ export const getChannelByDevice = async (deviceId) => {
   const channelInfo = response.split(" ");
 
   if (!channelInfo || !channelInfo[4]) {
-    throw new Error("Missing channel info");
+    throw new Error("Content is syncing. Check back soon!");
   }
 
   const [width, height] = channelInfo[4].split("-");

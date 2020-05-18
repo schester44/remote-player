@@ -5,41 +5,30 @@ import { toInt } from "../utils/normalize";
 
 const debug = Debug("app:syncAux");
 
-const TOUCH_POINT_TYPE = "U";
+const TOUCH_TYPES = { U: true, T: true };
 
-//-- RAW[TouchPoint]--
-// ch: "768"
-// cw: "1366"
-// h: "31.777777671813965"
-// targetID: "good Save"
-// touchAction: "23"
-// touchType: "C"
-// type: "S"
-// w: "308.77777767181396"
-// x: "64"
-// y: "472"
-// z: "16"
-
-const normalize = (raw = [], { type }) => {
+const normalize = (raw = []) => {
   const touchpointsBySlide = {};
 
   for (let i = 0; i < raw.length; i++) {
     const touchpoint = raw[i];
 
-    if (touchpoint.touchType !== type) continue;
+    const { targetID, touchType } = touchpoint;
 
-    if (!touchpointsBySlide[touchpoint.targetID]) {
-      touchpointsBySlide[touchpoint.targetID] = [];
+    if (!TOUCH_TYPES[touchType]) continue;
+
+    if (!touchpointsBySlide[targetID]) {
+      touchpointsBySlide[targetID] = [];
     }
 
-    touchpointsBySlide[touchpoint.targetID].push({
+    touchpointsBySlide[targetID].push({
       height: toInt(touchpoint.h),
       width: toInt(touchpoint.w),
       x: toInt(touchpoint.x),
       y: toInt(touchpoint.y),
       z: toInt(touchpoint.z),
       action: touchpoint.touchAction,
-      type: touchpoint.touchType,
+      type: touchType,
     });
   }
 
@@ -68,7 +57,7 @@ export const getSyncAux = async () => {
       `
   )();
 
-  const touchpoints = normalize(touchpointsDB, { type: TOUCH_POINT_TYPE });
+  const touchpoints = normalize(touchpointsDB);
 
   debug("touchpointsBySlide", touchpoints);
 
