@@ -528,14 +528,6 @@ export default class WebDevice {
     this.activeVideosPlaying = 0;
     this.hideVolumeButton();
 
-    // Player was paused but the user clicked one of the navigation buttons
-    if (this.isPaused) {
-      const icon = document.querySelector("#pause-icon");
-
-      icon.src = pauseIcon;
-      this.isPaused = false;
-    }
-
     debug("playSlide", index, direction, firstLoad);
 
     this.addActiveSlideToDOM({ direction, firstLoad });
@@ -556,7 +548,8 @@ export default class WebDevice {
       event_label: slide.name,
     });
 
-    if (this.playbackType === "auto") {
+    // setupNextSlideTransition creates a timer/countdown until playSlide is called again. We only want to do this if the player is setup for auto playback (auto pagination) and if the player is not paused.
+    if (this.playbackType === "auto" && !this.isPaused) {
       this.setupNextSlideTransition({ firstLoad });
     }
   }
