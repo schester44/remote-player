@@ -1,9 +1,12 @@
+import { toInt } from "../utils/normalize";
+
 export function buildTemplate(data) {
   const template = {
     id: data[1],
     name: data[2],
-    width: data[3],
-    height: data[4],
+    width: toInt(data[3]),
+    height: toInt(data[4]),
+    bgColor: data[16],
     RSS: data[47],
     tickerType: data[48],
     rssFeed: data[49],
@@ -23,7 +26,7 @@ export function buildTemplate(data) {
     dataFeedY: data[74],
     dataFeedZ: data[75],
     dataFeedHeight: data[76],
-    dataFeedWidth: data[77]
+    dataFeedWidth: data[77],
   };
 
   // TODO: Setup a template.ticker object similar to Slide

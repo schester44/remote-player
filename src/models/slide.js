@@ -86,7 +86,8 @@ export const getSlideByChannelVersion = async ({ ref, version, index }) => {
   return {
     index,
     slide: buildSlide(slideDetails[0].split("	")),
-    template: buildTemplate(slideDetails[1].split(" ")),
+    // Split by TAB
+    template: buildTemplate(slideDetails[1].split("	")),
     channel: {
       ref,
       version,

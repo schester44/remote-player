@@ -18,6 +18,7 @@ export const createSlide = async ({
   slide: { slide, template },
   channel,
   touchpoints = [],
+  templateTouchPoints = [],
 }) => {
   imgIndex = typeof imgIndex !== "undefined" ? imgIndex : index;
 
@@ -27,6 +28,7 @@ export const createSlide = async ({
     `div#slide-${index}.slide`,
     {
       style: {
+        background: !!template.bgColor ? template.bgColor : "transparent",
         position: "relative",
         width: `${channel.width}px`,
         height: `${channel.height}px`,
@@ -40,6 +42,18 @@ export const createSlide = async ({
       src,
     })
   );
+
+  templateTouchPoints.forEach((touchpoint) => {
+    dom.appendChild(
+      createTouchPoint({
+        touchpoint,
+        slideWidth: slide.width,
+        slideHeight: slide.height,
+        webDeviceWidth: channel.width,
+        webDeviceHeight: channel.height,
+      })
+    );
+  });
 
   touchpoints.forEach((touchpoint) => {
     dom.appendChild(

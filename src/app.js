@@ -73,9 +73,7 @@ if (
     wd.showError("The URL you entered is invalid. It is missing a device ID.");
   } else {
     Promise.all([getChannelByDevice(deviceId), getSyncAux()])
-      .then(([channel, touchpointsBySlide]) =>
-        wd.play({ channel, touchpointsBySlide })
-      )
+      .then(([channel, touchpoints]) => wd.play({ channel, touchpoints }))
       .catch((e) => wd.showError(e.message));
   }
 }

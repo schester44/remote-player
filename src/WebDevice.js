@@ -554,7 +554,7 @@ export default class WebDevice {
     }
   }
 
-  async play({ channel, touchpointsBySlide }) {
+  async play({ channel, touchpoints }) {
     debug("play channel");
 
     this.channels[channel.ref] = channel;
@@ -606,7 +606,9 @@ export default class WebDevice {
       index: 0,
       slide: firstSlide,
       channel,
-      touchpoints: touchpointsBySlide[firstSlide.slide.id],
+      touchpoints: touchpoints.bySlide[firstSlide.slide.id],
+      // TODO: Performance gains could be had by not creating the template touch points on every slide. Only create them once. Doing it this way because it requires less effort.
+      templateTouchPoints: touchpoints.byTemplate[firstSlide.template.id],
     });
 
     // Play the first slide ASAP
@@ -628,7 +630,8 @@ export default class WebDevice {
           index: 1,
           slide: firstSlide,
           channel,
-          touchpoints: touchpointsBySlide[firstSlide.slide.id],
+          touchpoints: touchpoints.bySlide[firstSlide.slide.id],
+          templateTouchPoints: touchpoints.byTemplate[firstSlide.template.id],
         }),
       });
     }
@@ -644,7 +647,8 @@ export default class WebDevice {
           index,
           channel,
           slide,
-          touchpoints: touchpointsBySlide[slide.slide.id],
+          touchpoints: touchpoints.bySlide[slide.slide.id],
+          templateTouchPoints: touchpoints.byTemplate[slide.template.id],
         });
 
         this.slidesByChannel[channel.ref][index] = slide;

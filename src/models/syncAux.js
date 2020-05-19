@@ -8,31 +8,50 @@ const debug = Debug("app:syncAux");
 const TOUCH_TYPES = { U: true, T: true };
 
 const normalize = (raw = []) => {
-  const touchpointsBySlide = {};
+  const bySlide = {};
+  const byTemplate = {};
 
   for (let i = 0; i < raw.length; i++) {
     const touchpoint = raw[i];
 
-    const { targetID, touchType } = touchpoint;
+    const { targetID, touchType, type } = touchpoint;
 
-    if (!TOUCH_TYPES[touchType]) continue;
+    if (!TOUCH_TYPES[touchType] || !targetID) continue;
 
-    if (!touchpointsBySlide[targetID]) {
-      touchpointsBySlide[targetID] = [];
+    if (type === "S") {
+      if (!bySlide[targetID]) {
+        bySlide[targetID] = [];
+      }
+
+      bySlide[targetID].push({
+        height: toInt(touchpoint.h),
+        width: toInt(touchpoint.w),
+        x: toInt(touchpoint.x),
+        y: toInt(touchpoint.y),
+        z: toInt(touchpoint.z),
+        action: touchpoint.touchAction,
+        type: touchType,
+      });
     }
 
-    touchpointsBySlide[targetID].push({
-      height: toInt(touchpoint.h),
-      width: toInt(touchpoint.w),
-      x: toInt(touchpoint.x),
-      y: toInt(touchpoint.y),
-      z: toInt(touchpoint.z),
-      action: touchpoint.touchAction,
-      type: touchType,
-    });
+    if (type === "T") {
+      if (!byTemplate[targetID]) {
+        byTemplate[targetID] = [];
+      }
+
+      byTemplate[targetID].push({
+        height: toInt(touchpoint.h),
+        width: toInt(touchpoint.w),
+        x: toInt(touchpoint.x),
+        y: toInt(touchpoint.y),
+        z: toInt(touchpoint.z),
+        action: touchpoint.touchAction,
+        type: touchType,
+      });
+    }
   }
 
-  return touchpointsBySlide;
+  return { bySlide, byTemplate };
 };
 
 export const getSyncAux = async () => {
