@@ -1,9 +1,6 @@
 import axios from "axios";
-import Debug from "debug";
 import config from "../config";
 import { toInt } from "../utils/normalize";
-
-const debug = Debug("app:syncAux");
 
 const TOUCH_TYPES = { U: true, T: true };
 
@@ -77,8 +74,6 @@ export const getSyncAux = async () => {
   )();
 
   const touchpoints = normalize(touchpointsDB);
-
-  debug("touchpointsBySlide", touchpoints);
 
   return touchpoints;
 };

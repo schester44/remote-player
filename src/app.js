@@ -4,6 +4,7 @@ import { getChannelByDevice } from "./models/channel";
 import { getSyncAux } from "./models/syncAux";
 import { getUserStyles } from "./utils/styles";
 import { updatePageTitle } from "./utils";
+import h from "hyperscript";
 
 import WebDevice from "./WebDevice";
 import Logger from "./Logger";
@@ -72,8 +73,89 @@ if (
   if (!deviceId) {
     wd.showError("The URL you entered is invalid. It is missing a device ID.");
   } else {
-    Promise.all([getChannelByDevice(deviceId), getSyncAux()])
-      .then(([channel, touchpoints]) => wd.play({ channel, touchpoints }))
-      .catch((e) => wd.showError(e.message));
+    const $root = document.getElementById("root");
+
+    const tryPlayingChannel = async () => {
+      Promise.all([getChannelByDevice(deviceId), getSyncAux()])
+        .then(([channel, touchpoints]) => {
+          $root.classList.remove("app-loaded");
+
+          const $error = document.getElementById("error");
+
+          if ($error) {
+            $root.removeChild($error);
+          }
+
+          wd.play({ channel, touchpoints });
+        })
+        .catch((e) => {
+          waitThenTryAgain();
+        });
+    };
+
+    const waitThenTryAgain = () => {
+      let count = 30;
+
+      const $error = document.getElementById("error");
+
+      if ($error) {
+        $root.removeChild($error);
+      }
+
+      const updateMsg = h(
+        "p",
+        { style: { margin: "8px 0" } },
+        `Checking status again in ${count} seconds`
+      );
+
+      $root.classList.add("app-loaded");
+
+      $root.appendChild(
+        h(
+          "div#error",
+          {
+            style: {
+              "font-family": "sans-serif",
+              height: "100vh",
+              width: "100vw",
+              display: "flex",
+              "align-items": "center",
+              "justify-content": "center",
+              "flex-direction": "column",
+            },
+          },
+          [
+            h("h1.msg", "This player is still processing"),
+            updateMsg,
+            h(
+              "p",
+              {
+                style: {
+                  "font-size": "12px",
+                  color: "rgba(140, 140, 140, 1)",
+                },
+              },
+              "This process can take up to 30 minutes. Please check back later."
+            ),
+          ]
+        )
+      );
+
+      let timer = setInterval(() => {
+        updateMsg.innerText = `Checking status again in ${count} ${
+          count === 1 ? "second" : "seconds"
+        }`;
+
+        if (count <= 0) {
+          window.clearInterval(timer);
+
+          tryPlayingChannel();
+        }
+
+        count--;
+      }, 1000);
+    };
+
+    tryPlayingChannel();
   }
 }
