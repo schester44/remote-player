@@ -577,7 +577,9 @@ export default class WebDevice {
       });
     }
 
-    if (this.isResponsive) {
+    const channelWidthExceedsWindow = channel.width > window.innerWidth;
+
+    if (this.isResponsive || channelWidthExceedsWindow) {
       scaleContainer.style.width = "100vw";
       scaleContainer.style.height = "100vh";
       scaleContainer.style.overflow = "hidden";
