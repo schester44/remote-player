@@ -33,6 +33,9 @@ export default class WebDevice {
   }) {
     this.channels = {};
     this.slidesByChannel = {};
+    // Stores a key/value pair where key is the slide ID and value is said slides index within the channel
+    this.slideIndexMap = {};
+
     this.currentSlideIndex = 0;
     this.activeChannel = undefined;
 
@@ -94,6 +97,12 @@ export default class WebDevice {
       if (this.volumeControl.contains(e.target)) return;
 
       this.volumeControl.classList.remove("open");
+    });
+
+    emitter.on("slide:play", ({ id }) => {
+      const index = this.slideIndexMap[this.activeChannel][id];
+
+      this.playSlide({ index });
     });
 
     emitter.on("video:loading", () => {
@@ -344,32 +353,30 @@ export default class WebDevice {
   playPrevSlide() {
     const slides = this.getActiveChannel();
 
-    if (this.currentSlideIndex === 0) {
-      this.currentSlideIndex = slides.length - 1;
-    } else {
-      this.currentSlideIndex--;
-    }
+    const prevIndex =
+      this.currentSlideIndex === 0
+        ? slides.length - 1
+        : this.currentSlideIndex - 1;
 
-    debug("playPrevSlide", this.currentSlideIndex);
-    this.playSlide({ index: this.currentSlideIndex, direction: "prev" });
+    debug("playPrevSlide", prevIndex);
+    this.playSlide({ index: prevIndex, direction: "prev" });
   }
 
   playNextSlide() {
     const slides = this.getActiveChannel();
 
-    if (this.currentSlideIndex === slides.length - 1) {
-      this.currentSlideIndex = 0;
-    } else {
-      this.currentSlideIndex++;
-    }
+    const nextIndex =
+      this.currentSlideIndex === slides.length - 1
+        ? 0
+        : this.currentSlideIndex + 1;
 
-    debug("playNextSlide", this.currentSlideIndex);
+    debug("playNextSlide", nextIndex);
 
-    this.playSlide({ index: this.currentSlideIndex, direction: "next" });
+    this.playSlide({ index: nextIndex, direction: "next" });
   }
 
-  addActiveSlideToDOM({ firstLoad, direction }) {
-    const { dom: $slide } = this.getActiveChannel()[this.currentSlideIndex];
+  addSlideToDOM({ index, firstLoad, direction }) {
+    const { dom: $slide } = this.getActiveChannel()[index];
 
     if (firstLoad || direction === "next") {
       this.$player.appendChild($slide);
@@ -518,19 +525,24 @@ export default class WebDevice {
     if (isPaused) {
       this.stopPaginationTimer();
     } else {
-      this.playNextSlide({ index: this.currentSlideIndex, direction: "next" });
+      this.playNextSlide();
     }
 
     this.isPaused = isPaused;
   }
 
-  async playSlide({ index, direction = "next", firstLoad = false }) {
+  async playSlide({
+    index = this.currentSlideIndex,
+    direction = "next",
+    firstLoad = false,
+  }) {
     this.activeVideosPlaying = 0;
+    this.currentSlideIndex = index;
     this.hideVolumeButton();
 
     debug("playSlide", index, direction, firstLoad);
 
-    this.addActiveSlideToDOM({ direction, firstLoad });
+    this.addSlideToDOM({ index, direction, firstLoad });
 
     if (!this.isLoaded) {
       this.isLoaded = true;
@@ -615,6 +627,11 @@ export default class WebDevice {
 
     // Play the first slide ASAP
     this.slidesByChannel[channel.ref] = [firstSlide];
+
+    this.slideIndexMap[channel.ref] = {
+      [firstSlide.slide.id]: 0,
+    };
+
     this.playSlide({ index: 0, firstLoad: true });
 
     const indices = Array.from({
@@ -654,6 +671,7 @@ export default class WebDevice {
         });
 
         this.slidesByChannel[channel.ref][index] = slide;
+        this.slideIndexMap[channel.ref][slide.slide.id] = index;
       });
     }
   }

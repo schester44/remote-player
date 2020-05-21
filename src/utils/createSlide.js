@@ -20,6 +20,7 @@ export const createSlide = async ({
   touchpoints = [],
   templateTouchPoints = [],
 }) => {
+
   imgIndex = typeof imgIndex !== "undefined" ? imgIndex : index;
 
   const src = `${config.baseUrl}/scs:RPC.wdGetSlide,${channel.ref},${channel.version},${imgIndex}`;
@@ -27,6 +28,8 @@ export const createSlide = async ({
   const dom = h(
     `div#slide-${index}.slide`,
     {
+      'data-index': index,
+      'data-slideid': slide.id,
       style: {
         background: !!template.bgColor ? template.bgColor : "transparent",
         position: "relative",

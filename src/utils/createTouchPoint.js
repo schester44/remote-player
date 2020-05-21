@@ -1,5 +1,6 @@
 import h from "hyperscript";
 import { scaleWidth, scaleHeight, scaleX, scaleY } from "../utils/normalize";
+import { emitter } from "../emitter";
 
 export const createTouchPoint = ({
   touchpoint,
@@ -10,12 +11,18 @@ export const createTouchPoint = ({
 }) => {
   const $elem = h("div.touchpoint", {
     onclick: () => {
-      // T = "target url" -- which has no real meaning other than we want the URL to open in the iframe instead of a new window
-      if (touchpoint.type === "T") {
-        window.location.href = touchpoint.action;
-      } else {
-        // This should be an action type of "U" which means URL.. which means open in a new window
-        window.open(touchpoint.action);
+      switch (touchpoint.type) {
+        case "T":
+          window.location.href = touchpoint.action;
+          break;
+        case "U":
+          window.open(touchpoint.action);
+          break;
+        case "S":
+          emitter.emit("slide:play", { id: touchpoint.action });
+          break;
+        default:
+          break;
       }
     },
     style: {
