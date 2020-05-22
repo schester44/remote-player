@@ -2,7 +2,7 @@ import axios from "axios";
 import config from "../config";
 import { toInt } from "../utils/normalize";
 
-const TOUCH_TYPES = { U: true, T: true };
+const TOUCH_TYPES = { U: true, T: true, S: true };
 
 const normalize = (raw = []) => {
   const bySlide = {};
