@@ -66,10 +66,10 @@ export function buildSlide(items) {
   return slide;
 }
 
-export const getSlideByChannelVersion = async ({ ref, version, index }) => {
+export const getSlideByChannelVersion = async ({ channel, index }) => {
   const data = qs.stringify({
-    channelReference: ref,
-    versionID: version,
+    channelReference: channel.ref,
+    versionID: channel.version,
     slideIndex: index,
   });
 
@@ -88,9 +88,6 @@ export const getSlideByChannelVersion = async ({ ref, version, index }) => {
     slide: buildSlide(slideDetails[0].split("	")),
     // Split by TAB
     template: buildTemplate(slideDetails[1].split("	")),
-    channel: {
-      ref,
-      version,
-    },
+    channel,
   };
 };

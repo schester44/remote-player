@@ -36,6 +36,9 @@ export default class WebDevice {
     // Stores a key/value pair where key is the slide ID and value is said slides index within the channel
     this.slideIndexMap = {};
 
+    // Breadcrumbs for touch navigation
+    this.touchCrumbs = [];
+
     this.currentSlideIndex = 0;
     this.activeChannel = undefined;
 
@@ -90,6 +93,14 @@ export default class WebDevice {
     debug("player element added to root");
   }
 
+  addTouchCrumb(index) {
+    if (this.touchCrumbs.length >= 10) {
+      this.touchCrumbs.splice(1, this.touchCrumbs.length - 1);
+    }
+
+    this.touchCrumbs.push(index);
+  }
+
   registerEventHandlers() {
     // Close the volume slider on outside click
     document.addEventListener("click", (e) => {
@@ -102,7 +113,9 @@ export default class WebDevice {
     emitter.on("slide:play", ({ id }) => {
       const index = this.slideIndexMap[this.activeChannel][id];
 
-      this.playSlide({ index });
+      this.addTouchCrumb(this.currentSlideIndex);
+
+      this.playSlide({ index, isDisabledTransitionTouch: true });
     });
 
     emitter.on("video:loading", () => {
@@ -353,12 +366,13 @@ export default class WebDevice {
   playPrevSlide() {
     const slides = this.getActiveChannel();
 
-    const prevIndex =
+    let prevIndex =
       this.currentSlideIndex === 0
         ? slides.length - 1
         : this.currentSlideIndex - 1;
 
     debug("playPrevSlide", prevIndex);
+
     this.playSlide({ index: prevIndex, direction: "prev" });
   }
 
@@ -535,6 +549,7 @@ export default class WebDevice {
     index = this.currentSlideIndex,
     direction = "next",
     firstLoad = false,
+    isDisabledTransitionTouch = false,
   }) {
     this.activeVideosPlaying = 0;
     this.currentSlideIndex = index;
@@ -549,8 +564,12 @@ export default class WebDevice {
       this.$root.classList.add("app-loaded");
     }
 
-    if (!firstLoad) {
+    if (!firstLoad && !isDisabledTransitionTouch) {
       await this.transitionToSlide({ direction });
+    }
+
+    if (isDisabledTransitionTouch) {
+      this.$player.removeChild(this.$player.firstChild);
     }
 
     const { slide } = this.getActiveChannel()[index];
@@ -569,11 +588,16 @@ export default class WebDevice {
   async play({ channel, touchpoints }) {
     debug("play channel");
 
+    const $container = document.getElementById("container");
+
     this.channels[channel.ref] = channel;
     this.activeChannel = channel.ref;
 
     this.$root.style.width = `${channel.width}px`;
     this.$root.style.height = `${channel.height}px`;
+
+    $container.style.width = `${channel.width}px`;
+    $container.style.height = `${channel.height}px`;
 
     const scaleContainer = document.getElementById("scale");
 
@@ -589,6 +613,24 @@ export default class WebDevice {
       });
     }
 
+    const resize = () => {
+      const channelWidthExceedsWindow = channel.width > window.innerWidth;
+
+      if (!this.isResponsive && !channelWidthExceedsWindow) return;
+
+      scaleContainer.style.width = "100vw";
+      scaleContainer.style.height = "100vh";
+      scaleContainer.style.overflow = "hidden";
+
+      const width = window.innerWidth;
+      const scale = width / channel.width;
+
+      $container.style.width = `${channel.width * scale}px`;
+      $container.style.height = `${channel.height * scale}px`;
+
+      this.$root.style.transform = `scale(${scale})`;
+    };
+
     const channelWidthExceedsWindow = channel.width > window.innerWidth;
 
     if (this.isResponsive || channelWidthExceedsWindow) {
@@ -596,23 +638,15 @@ export default class WebDevice {
       scaleContainer.style.height = "100vh";
       scaleContainer.style.overflow = "hidden";
 
-      const resize = () => {
-        const width = window.innerWidth;
-        const scale = width / channel.width;
-
-        this.$root.style.transform = `scale(${scale})`;
-      };
-
       resize();
-
-      window.addEventListener("resize", resize);
     }
+
+    window.addEventListener("resize", resize);
 
     this.createControls();
 
     const firstSlide = await getSlideByChannelVersion({
-      ref: channel.ref,
-      version: channel.version,
+      channel,
       index: 0,
     });
 
@@ -658,8 +692,7 @@ export default class WebDevice {
     // loop starts at 1 since we're initializing the array with the first item
     for (let index = 1; index <= indices.length; index++) {
       getSlideByChannelVersion({
-        ref: channel.ref,
-        version: channel.version,
+        channel,
         index,
       }).then(async (slide) => {
         slide.dom = await createSlide({
