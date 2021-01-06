@@ -21,7 +21,7 @@
     "@babel/plugin-transform-runtime": "^7.9.0",
     "@braid/rafscroll": "^2.0.1",
     "autoprefixer": "^9.7.5",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-js": "3",
     "debug": "^4.1.1",
     "hyperscript": "^2.0.2",
